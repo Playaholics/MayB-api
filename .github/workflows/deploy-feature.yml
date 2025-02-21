@@ -8,7 +8,7 @@ env:
   PROJECT_ID: mayb-api
   GAR_LOCATION: asia-northeast3
   REPOSITORY: mayb-repo
-  IMAGE_NAME: mayn-api
+  IMAGE_NAME: mayb-api
   REGION: asia-northeast1
 
 jobs:
