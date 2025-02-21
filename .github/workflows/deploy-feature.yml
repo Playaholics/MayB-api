@@ -32,10 +32,9 @@ jobs:
           workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.SERVICE_ACCOUNT }}
 
-      - uses: 'google-github-actions/setup-gcloud@v1'
+      - uses: 'google-github-actions/setup-gcloud@v2'
         with:
           project_id: '${{ env.PROJECT_ID }}'
-          debug: true
       - name: 'Set variables'
         run: |-
           branch_name=$(echo "${{ github.head_ref }}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g' | sed -E 's/^-+|-+$//g')
