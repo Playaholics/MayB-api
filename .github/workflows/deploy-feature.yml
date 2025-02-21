@@ -50,7 +50,7 @@ jobs:
           java-version: 21
       - uses: gradle/gradle-build-action@v2
       - name: Execute Gradle build
-        run: ./gradlew :may-api:build
+        run: ./gradlew :mayb-api:build
 
       - name: 'Docker auth'
         run: |-
