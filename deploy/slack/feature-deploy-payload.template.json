@@ -1,0 +1,22 @@
+{
+  "username": "API Feature Deploy",
+  "icon_emoji": ":lightning_cloud:",
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": ":large_green_circle: *<${PR_LINK}|${PR_NAME}>* deployed successfully.\nLink : ${SERVICE_URL}"
+      }
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "on `${BRANCH_NAME}` | <${PR_LINK}/commits/${COMMIT_SHA}|${COMMIT_SHA}> | <${REPO_LINK}|${REPO_NAME}>"
+        }
+      ]
+    }
+  ]
+}
