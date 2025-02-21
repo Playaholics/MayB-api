@@ -29,9 +29,6 @@ jobs:
       - uses: 'google-github-actions/auth@v2'
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
-#          create_credentials_file: true
-#          workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
-#          service_account: ${{ vars.SERVICE_ACCOUNT }}
 
       - uses: 'google-github-actions/setup-gcloud@v2'
         with:
@@ -52,7 +49,7 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
       - name: Execute Gradle build
-        run: ./gradlew :mayb-api:build
+        run: ./gradlew build
 
       - name: 'Docker auth'
         run: |-
