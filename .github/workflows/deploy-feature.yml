@@ -57,7 +57,7 @@ jobs:
 
       - name: Build and Push Container
         run: |-
-          docker build --file ./Dockerfile -t "${{ env.IMAGE }}" /mayb-api/
+          docker build --file ./Dockerfile -t "${{ env.IMAGE }}" .
           docker push "${{ env.IMAGE }}"
 
       - name: Create feature manifest
