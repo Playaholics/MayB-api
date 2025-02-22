@@ -5,7 +5,10 @@ plugins {
 }
 
 group = 'kr.mayb'
-version = '0.0.1-SNAPSHOT'
+
+bootJar {
+	archiveFileName = 'mayb-api.jar'
+}
 
 java {
 	toolchain {

@@ -1,0 +1,54 @@
+on:
+  pull_request:
+    types: [ closed ]
+
+name: "Remove feature from Cloud Run"
+
+env:
+  PROJECT_ID: mayb-api
+  REGION: asia-northeast1
+
+jobs:
+  release-feature:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+      pull-requests: 'write'
+
+    steps:
+      - uses: 'actions/checkout@v3'
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - uses: 'google-github-actions/setup-gcloud@v1'
+        with:
+          project_id: '${{ env.PROJECT_ID }}'
+
+      - name: 'Remove Cloud Run'
+        id: remove
+        run: |-
+          branch_name=$(echo "${{ github.event.pull_request.head.ref }}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g' | sed -E 's/^-+|-+$//g')
+          pr_num="${{ github.event.pull_request.number }}"
+          
+          SERVICE_NAME="${{ vars.FEATURE_CLOUD_RUN_PREFIX }}${branch_name}-${pr_num}"
+          gcloud run services describe ${SERVICE_NAME} --region=${{ env.REGION }} --format "value(status.url)" > url.txt
+          cat url.txt | awk '{print "url="$0}' >> $GITHUB_OUTPUT
+          gcloud run services delete ${SERVICE_NAME} --region=${{ env.REGION }} --quiet
+
+      - name: 'Comment'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: 'Cloud Run ${{ steps.remove.outputs.url }} is removed.'
+            })
