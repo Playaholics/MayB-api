@@ -28,6 +28,11 @@ springdoc:
     syntax-highlight.theme: monokai
     doc-expansion: none
 
+slack:
+  token: xoxb-8467470287735-8475272260823-jk2lqMoDcpzoEWilubBd9wtZ
+  channel: "#ci-cd"
+  username: Server-bot
+
 ---
 # dev config
 spring.config.activate.on-profile: dev
