@@ -1,13 +1,12 @@
 package kr.mayb.util.response;
 
 import org.springframework.data.domain.Page;
-import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
 public class Responses {
-    public static ResponseEntity<ApiResponse<Void>> error(ProblemDetail error) {
+    public static ResponseEntity<ApiResponse<Void>> error(Error error) {
         ApiResponse<Void> root = ApiResponse.error(error);
         return ResponseEntity.status(error.getStatus()).body(root);
     }

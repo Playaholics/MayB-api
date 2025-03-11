@@ -1,6 +1,7 @@
 package kr.mayb.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import kr.mayb.error.BadRequestException;
 import kr.mayb.util.response.ApiResponse;
 import kr.mayb.util.response.Responses;
 import lombok.RequiredArgsConstructor;
@@ -16,5 +17,15 @@ public class HelloController {
     @GetMapping("/hello")
     public ResponseEntity<ApiResponse<String>> hello() {
         return Responses.ok("hello mayb API!");
+    }
+
+    @GetMapping("/hello/client/error")
+    public ResponseEntity<Void> clientError() {
+        throw new BadRequestException("Error!!!");
+    }
+
+    @GetMapping("/hello/server/error")
+    public ResponseEntity<Void> serverError() {
+        throw new RuntimeException("Error!!!");
     }
 }
