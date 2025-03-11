@@ -1,4 +1,4 @@
-package kr.mayb.app.controller;
+package kr.mayb.controller;
 
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.beans.factory.annotation.Value;

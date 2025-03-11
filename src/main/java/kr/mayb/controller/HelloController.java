@@ -1,7 +1,10 @@
-package kr.mayb.app.controller;
+package kr.mayb.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import kr.mayb.util.response.ApiResponse;
+import kr.mayb.util.response.Responses;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -11,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class HelloController {
 
     @GetMapping("/hello")
-    public String hello() {
-        return "hello mayb API!";
+    public ResponseEntity<ApiResponse<String>> hello() {
+        return Responses.ok("hello mayb API!");
     }
 }

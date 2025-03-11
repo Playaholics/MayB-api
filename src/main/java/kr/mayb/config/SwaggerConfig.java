@@ -1,4 +1,4 @@
-package kr.mayb.app.config;
+package kr.mayb.config;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -17,7 +17,7 @@ import java.util.List;
 @Configuration
 public class SwaggerConfig {
     public static final String SECURITY_NAME = "BearerAuth";
-    private static final String PACKAGE_PATH = "kr.mayb.app.controller";
+    private static final String PACKAGE_PATH = "kr.mayb.controller";
     private static final String NEW_API_PATH_PREFIX = "/**";
 
     @Bean
