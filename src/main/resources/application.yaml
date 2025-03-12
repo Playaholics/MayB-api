@@ -18,7 +18,7 @@ spring.mvc.pathmatch.matching-strategy: ant-path-matcher
 spring.sleuth.sampler.probability: 0.1
 
 springdoc:
-  packages-to-scan: kr.mayb.app.controller
+  packages-to-scan: kr.mayb.controller
   api-docs:
     path: /docs
     groups.enabled: false

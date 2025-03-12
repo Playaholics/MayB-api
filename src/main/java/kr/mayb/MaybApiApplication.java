@@ -1,4 +1,4 @@
-package kr.mayb.app;
+package kr.mayb;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.boot.SpringApplication;
