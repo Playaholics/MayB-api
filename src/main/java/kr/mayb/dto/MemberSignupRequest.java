@@ -51,7 +51,7 @@ public record MemberSignupRequest(
                 member.setGender(this.gender);
                 member.setBirthdate(mergeBirthdate());
                 member.setOccupation(this.occupation);
-                member.setContact(trimContact());
+                member.setContact(this.contact);
                 member.setIntroduction(this.introduction);
                 member.setIdealType(this.idealType);
 
@@ -60,9 +60,5 @@ public record MemberSignupRequest(
 
         private LocalDate mergeBirthdate() {
                 return LocalDate.of(this.birthYear, this.birthMonth, this.birthDay);
-        }
-
-        private String trimContact() {
-                return String.join("", this.contact.split("-"));
         }
 }
