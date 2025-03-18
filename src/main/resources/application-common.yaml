@@ -1,0 +1,12 @@
+logging.level:
+  org.springframework.web.servlet.handler.AbstractHandlerExceptionResolver: error
+  org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: error
+  org.springframework.web.servlet.mvc.annotation.ResponseStatusExceptionResolver: error
+
+  org.apache.pdfbox: error
+  org.apache.fontbox: error
+
+server.compression.enabled: true
+
+spring.mvc.pathmatch.matching-strategy: ant-path-matcher
+spring.sleuth.sampler.probability: 0.1

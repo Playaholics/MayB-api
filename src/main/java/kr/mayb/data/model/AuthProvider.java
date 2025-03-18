@@ -5,9 +5,10 @@ import kr.mayb.enums.Provider;
 import lombok.Getter;
 import lombok.Setter;
 
-@Entity
 @Getter
 @Setter
+@Table(schema = "mayb")
+@Entity
 public class AuthProvider extends BaseEntity {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,6 +19,7 @@ public class AuthProvider extends BaseEntity {
     private long memberId;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private Provider provider;
 
     @Column(nullable = false, unique = true)

@@ -2,18 +2,14 @@ package kr.mayb.data.model;
 
 import java.time.OffsetDateTime;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Table(schema = "mayb")
 @Entity
 public class RefreshToken {
 

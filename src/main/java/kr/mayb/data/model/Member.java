@@ -1,20 +1,21 @@
 package kr.mayb.data.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import kr.mayb.enums.Gender;
+import org.hibernate.annotations.BatchSize;
 
 @Getter
 @Setter
-@Entity 
+@Table(schema = "mayb")
+@Entity
 public class Member extends BaseEntity{
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,6 +29,10 @@ public class Member extends BaseEntity{
     private String password;
 
     @Column
+    private String name;
+
+    @Column
+    @Enumerated(EnumType.STRING)
     private Gender gender;
 
     @Column
@@ -44,4 +49,13 @@ public class Member extends BaseEntity{
 
     @Column
     private String idealType;
+
+    @JsonIgnore
+    @BatchSize(size = 10)
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(schema = "mayb",
+            name = "rel_member_authority",
+            joinColumns = @JoinColumn(name = "member_id"),
+            inverseJoinColumns = @JoinColumn(name = "authority_id"))
+    private List<Authority> authorities = new ArrayList<>();
 }
