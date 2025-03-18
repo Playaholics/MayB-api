@@ -2,6 +2,7 @@ package kr.mayb.data.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import kr.mayb.enums.AccountStatus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -58,4 +59,8 @@ public class Member extends BaseEntity{
             joinColumns = @JoinColumn(name = "member_id"),
             inverseJoinColumns = @JoinColumn(name = "authority_id"))
     private List<Authority> authorities = new ArrayList<>();
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private AccountStatus status;
 }

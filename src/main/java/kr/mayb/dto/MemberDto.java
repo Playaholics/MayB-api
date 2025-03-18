@@ -1,8 +1,8 @@
 package kr.mayb.dto;
 
 import kr.mayb.data.model.Member;
+import kr.mayb.enums.AccountStatus;
 import kr.mayb.enums.Gender;
-import kr.mayb.security.AESGCMEncoder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -30,6 +30,8 @@ public class MemberDto {
 
     private String idealType;
 
+    private AccountStatus status;
+
     public static MemberDto of(Member member, String contact) {
         return new MemberDto(
                 member.getId(),
@@ -40,7 +42,8 @@ public class MemberDto {
                 member.getOccupation(),
                 contact,
                 member.getIntroduction(),
-                member.getIdealType()
+                member.getIdealType(),
+                member.getStatus()
         );
     }
 }

@@ -4,6 +4,7 @@ import kr.mayb.data.model.Authority;
 import kr.mayb.data.model.Member;
 import kr.mayb.data.repository.AuthorityRepository;
 import kr.mayb.data.repository.MemberRepository;
+import kr.mayb.enums.AccountStatus;
 import kr.mayb.enums.AuthorityName;
 import kr.mayb.security.AESGCMEncoder;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,7 @@ public class MemberService {
 
         Authority authority = authorityRepository.findByName(AuthorityName.ROLE_USER);
         member.setAuthorities(Collections.singletonList(authority));
+        member.setStatus(AccountStatus.ACTIVE);
 
         return memberRepository.save(member);
     }

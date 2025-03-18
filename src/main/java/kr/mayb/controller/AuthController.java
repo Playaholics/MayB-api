@@ -27,5 +27,4 @@ public class AuthController {
         AuthDto response = authService.registerMember(request);
         return Responses.ok(response);
     }
-
 }
