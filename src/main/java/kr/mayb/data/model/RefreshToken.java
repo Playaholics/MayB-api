@@ -21,10 +21,7 @@ public class RefreshToken {
     private long memberId;
 
     @Column
-    private String refreshToken;
-
-    @Column
-    private OffsetDateTime expiresAt;
+    private String token;
 
     @Setter(AccessLevel.NONE)
     @Column(nullable = false, updatable = false)

@@ -1,5 +1,7 @@
 package kr.mayb.service;
 
+import io.jsonwebtoken.Claims;
+import jakarta.transaction.Transactional;
 import kr.mayb.data.model.Member;
 import kr.mayb.dto.AuthDto;
 import kr.mayb.dto.MemberDto;
@@ -53,6 +55,7 @@ public class AuthService {
         return login(member);
     }
 
+    @Transactional
     private AuthDto login(Member member) {
         String contact = aesgcmEncoder.decrypt(member.getContact());
         MemberDto memberDto = MemberDto.of(member, contact);
@@ -64,5 +67,16 @@ public class AuthService {
 
     private boolean isSignedUp(String email) {
         return memberService.existsByEmail(email);
+    }
+
+    @Transactional
+    public AuthDto refresh(String refreshToken) {
+        Claims claims = tokenHelper.getRefreshClaims(refreshToken);
+        Integer memberId = claims.get("id", Integer.class);
+        Member member = memberService.findMember(memberId)
+                .orElseThrow(() -> new UsernameNotFoundException("Authentication failed. Member not found: " + memberId));
+
+        tokenHelper.removeOldRefreshToken(member.getId(), refreshToken);
+        return login(member);
     }
 }

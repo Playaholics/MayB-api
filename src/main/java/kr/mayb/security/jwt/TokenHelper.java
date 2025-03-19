@@ -6,14 +6,19 @@ import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.transaction.Transactional;
 import kr.mayb.data.model.Authority;
 import kr.mayb.data.model.Member;
+import kr.mayb.data.model.RefreshToken;
+import kr.mayb.data.repository.RefreshTokenRepository;
 import kr.mayb.security.TokenDto;
 import kr.mayb.security.TokenInvalidException;
 import kr.mayb.util.HttpUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -23,11 +28,14 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class TokenHelper {
     private static final String ISSUER = "mayb.kr";
 
     private static final int ACCESS_TOKEN_EXPIRY = 15 * 60 * 1000; // 15m
     private static final int REFRESH_TOKEN_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 1w
+
+    private final RefreshTokenRepository refreshTokenRepository;
 
     private SecretKey accessKey;
     private SecretKey refreshKey;
@@ -40,10 +48,23 @@ public class TokenHelper {
         return generateJwt(claims, ACCESS_TOKEN_EXPIRY, accessKey);
     }
 
+    @Transactional
     public TokenDto generateRefreshToken(Member member) {
         Claims claims = getRefreshTokenClaims(member);
 
-        return generateJwt(claims, REFRESH_TOKEN_EXPIRY, refreshKey);
+        TokenDto tokenDto = generateJwt(claims, REFRESH_TOKEN_EXPIRY, refreshKey);
+
+        saveRefreshToken(member, tokenDto);
+
+        return tokenDto;
+    }
+
+    private void saveRefreshToken(Member member, TokenDto tokenDto) {
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setMemberId(member.getId());
+        refreshToken.setToken(tokenDto.token());
+
+        refreshTokenRepository.save(refreshToken);
     }
 
     private Claims generateAccessTokenClaims(Member member) {
@@ -96,10 +117,6 @@ public class TokenHelper {
         }
     }
 
-    private long getCurrentTimeMillis() {
-        return System.currentTimeMillis();
-    }
-
     private Date generateExpirationDate(long expiry) {
         return new Date(System.currentTimeMillis() + expiry);
     }
@@ -129,5 +146,16 @@ public class TokenHelper {
         this.refreshParser = Jwts.parserBuilder()
                 .setSigningKey(refreshKey)
                 .build();
+    }
+
+    public Optional<RefreshToken> findRefreshToken(long memberId, String refreshToken) {
+        return refreshTokenRepository.findByMemberIdAndToken(memberId, refreshToken);
+    }
+
+    public void removeOldRefreshToken(long memberId, String refreshToken) {
+        RefreshToken token = findRefreshToken(memberId, refreshToken)
+                .orElseThrow(() -> new BadCredentialsException("Authentication failed. Invalid refresh token"));
+
+        refreshTokenRepository.delete(token);
     }
 }
