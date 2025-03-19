@@ -1,6 +1,8 @@
 package kr.mayb.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import kr.mayb.dto.AuthDto;
 import kr.mayb.dto.MemberSignupRequest;
 import kr.mayb.security.DenyAll;
@@ -27,4 +29,20 @@ public class AuthController {
         AuthDto response = authService.registerMember(request);
         return Responses.ok(response);
     }
+
+    @PermitAll
+    @PostMapping("/auth/login")
+    public ResponseEntity<ApiResponse<AuthDto>> login(@RequestBody @Valid LoginRequest request) {
+        AuthDto response = authService.login(request.email(), request.password());
+        return Responses.ok(response);
+    }
+
+    private record LoginRequest(
+            @Email
+            @NotBlank
+            String email,
+
+            @NotBlank
+            String password
+    ) {}
 }

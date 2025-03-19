@@ -50,7 +50,7 @@ dependencies {
 	runtimeOnly 'org.postgresql:postgresql'
 
 	// Utils
-	implementation 'org.apache.commons:commons-lang3:3.0'
+	implementation 'org.apache.commons:commons-lang3'
 
 	// swagger
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'

@@ -1,5 +1,6 @@
 package kr.mayb.security.jwt;
 
+import jakarta.transaction.Transactional;
 import kr.mayb.data.model.Authority;
 import kr.mayb.data.model.Member;
 import kr.mayb.data.repository.MemberRepository;
@@ -20,6 +21,7 @@ public class AuthenticationHelper {
     private final AESGCMEncoder aesgcmEncoder;
     private final MemberRepository memberRepository;
 
+    @Transactional
     public JwtUser loadJwtUser(long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ResourceNotFoundException("Member not found"));

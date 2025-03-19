@@ -1,5 +1,6 @@
 package kr.mayb.controller;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import kr.mayb.security.DenyAll;
 import kr.mayb.security.PermitAll;
 import kr.mayb.security.PermitAuthenticated;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Hidden
 @DenyAll
 @RestController
 public class SecurityController {

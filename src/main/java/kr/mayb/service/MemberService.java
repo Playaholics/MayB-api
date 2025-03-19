@@ -1,5 +1,6 @@
 package kr.mayb.service;
 
+import jakarta.transaction.Transactional;
 import kr.mayb.data.model.Authority;
 import kr.mayb.data.model.Member;
 import kr.mayb.data.repository.AuthorityRepository;
@@ -13,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +28,7 @@ public class MemberService {
         return memberRepository.existsByEmail(email);
     }
 
+    @Transactional
     public Member saveMember(Member member) {
         if (StringUtils.isNotBlank(member.getPassword())) {
             member.setPassword(passwordEncoder.encode(member.getPassword()));
@@ -40,5 +43,9 @@ public class MemberService {
         member.setStatus(AccountStatus.ACTIVE);
 
         return memberRepository.save(member);
+    }
+
+    public Optional<Member> findByEmail(String email) {
+        return memberRepository.findByEmail(email);
     }
 }

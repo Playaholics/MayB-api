@@ -16,7 +16,7 @@ spec:
       containers:
         - env:
             - name: SPRING_PROFILES_ACTIVE
-              value: dev
+              value: local
           image: ${IMAGE}
           ports:
             - containerPort: 8080

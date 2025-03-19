@@ -9,6 +9,11 @@ import kr.mayb.security.AESGCMEncoder;
 import kr.mayb.security.TokenDto;
 import kr.mayb.security.jwt.TokenHelper;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,14 +23,34 @@ public class AuthService {
     private final MemberService memberService;
     private final TokenHelper tokenHelper;
     private final AESGCMEncoder aesgcmEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     public AuthDto registerMember(MemberSignupRequest request) {
-        if (isSignUpped(request.email())) {
-            throw new BadRequestException("이미 가입된 이메일 입니다.");
+        if (isSignedUp(request.email())) {
+            throw new BadRequestException("Already signed up email");
         }
 
         Member saved = memberService.saveMember(request.toEntity());
         return login(saved);
+    }
+
+    public AuthDto login(String email, String password) {
+        if (StringUtils.isAnyBlank(email, password)) {
+            throw new AuthenticationServiceException("Authentication failed. No email or password was provided.");
+        }
+
+        Member member = memberService.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Authentication failed. Member not found: " + email));
+
+        if (StringUtils.isBlank(member.getPassword())) {
+            throw new BadCredentialsException("Authentication failed. Oauth member didn't set password");
+        }
+
+        if (!passwordEncoder.matches(password, member.getPassword())) {
+            throw new BadCredentialsException("Authentication failed. Invalid password");
+        }
+
+        return login(member);
     }
 
     private AuthDto login(Member member) {
@@ -37,7 +62,7 @@ public class AuthService {
         return new AuthDto(memberDto, accessToken, refreshToken);
     }
 
-    private boolean isSignUpped(String email) {
+    private boolean isSignedUp(String email) {
         return memberService.existsByEmail(email);
     }
 }
