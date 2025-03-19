@@ -14,6 +14,7 @@ import kr.mayb.util.response.ApiResponse;
 import kr.mayb.util.response.Responses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -45,9 +46,17 @@ public class AuthController {
     @Operation(summary = "토큰 갱신")
     @PermitAll
     @PostMapping("/auth/refresh")
-    public ResponseEntity<ApiResponse<AuthDto>> refresh(@RequestBody @Valid RefreshRequest request) {
+    public ResponseEntity<ApiResponse<AuthDto>> refresh(@RequestBody @Valid TokenRequest request) {
         AuthDto response = authService.refresh(request.refreshToken());
         return Responses.ok(response);
+    }
+
+    @Operation(summary = "로그아웃 (refresh token 제거)")
+    @PermitAll
+    @DeleteMapping("/auth/logout")
+    public ResponseEntity<Void> logout(@RequestBody @Valid TokenRequest request) {
+        authService.logout(request.refreshToken());
+        return Responses.noContent();
     }
 
     private record LoginRequest(
@@ -59,7 +68,7 @@ public class AuthController {
             String password
     ) {}
 
-    private record RefreshRequest(
+    private record TokenRequest(
             @NotBlank
             String refreshToken
     ) {}

@@ -76,7 +76,11 @@ public class AuthService {
         Member member = memberService.findMember(memberId)
                 .orElseThrow(() -> new UsernameNotFoundException("Authentication failed. Member not found: " + memberId));
 
-        tokenHelper.removeOldRefreshToken(member.getId(), refreshToken);
+        tokenHelper.removeRefreshToken(member.getId(), refreshToken);
         return login(member);
+    }
+
+    public void logout(String refreshToken) {
+        tokenHelper.removeRefreshToken(refreshToken);
     }
 }

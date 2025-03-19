@@ -152,10 +152,16 @@ public class TokenHelper {
         return refreshTokenRepository.findByMemberIdAndToken(memberId, refreshToken);
     }
 
-    public void removeOldRefreshToken(long memberId, String refreshToken) {
+    @Transactional
+    public void removeRefreshToken(long memberId, String refreshToken) {
         RefreshToken token = findRefreshToken(memberId, refreshToken)
                 .orElseThrow(() -> new BadCredentialsException("Authentication failed. Invalid refresh token"));
 
         refreshTokenRepository.delete(token);
+    }
+
+    @Transactional
+    public void removeRefreshToken(String refreshToken) {
+        refreshTokenRepository.deleteByToken(refreshToken);
     }
 }
