@@ -2,36 +2,17 @@
 # interface application config
 
 spring.application.name: mayb-api
-spring.profiles.active: ${zone:dev}
+spring:
+  profiles:
+    active: ${zone:local}
+    group:
+      "local": local,common
+      "dev": dev,common
+      "prod": common
 
-logging.level:
-  org.springframework.web.servlet.handler.AbstractHandlerExceptionResolver: error
-  org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: error
-  org.springframework.web.servlet.mvc.annotation.ResponseStatusExceptionResolver: error
-
-  org.apache.pdfbox: error
-  org.apache.fontbox: error
-
-server.compression.enabled: true
-
-spring.mvc.pathmatch.matching-strategy: ant-path-matcher
-spring.sleuth.sampler.probability: 0.1
-
-springdoc:
-  packages-to-scan: kr.mayb.controller
-  api-docs:
-    path: /docs
-    groups.enabled: false
-  swagger-ui:
-    path: /docs/ui
-    display-operation-id: true
-    syntax-highlight.theme: monokai
-    doc-expansion: none
-
-slack:
-  token: xoxb-8467470287735-8475272260823-jk2lqMoDcpzoEWilubBd9wtZ
-  channel: "#ci-cd"
-  username: Server-bot
+---
+# local config
+spring.config.activate.on-profile: local
 
 ---
 # dev config

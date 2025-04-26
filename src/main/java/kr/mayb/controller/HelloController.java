@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Hello", description = "Hello API")
 @RestController
-@RequiredArgsConstructor
 public class HelloController {
 
     @GetMapping("/hello")

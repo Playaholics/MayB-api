@@ -1,0 +1,10 @@
+springdoc:
+  packages-to-scan: kr.mayb.controller
+  api-docs:
+    path: /docs
+    groups.enabled: false
+  swagger-ui:
+    path: /docs/ui
+    display-operation-id: true
+    syntax-highlight.theme: monokai
+    doc-expansion: none

@@ -1,0 +1,47 @@
+spring:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  datasource:
+    generate-unique-name: false
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:mayB;DATABASE_TO_LOWER=TRUE;INIT=CREATE SCHEMA IF NOT EXISTS mayb
+    username: sa
+    password:
+  jpa:
+    database: default
+    hibernate.ddl-auto: create-drop
+
+    hibernate.use-new-id-generator-mappings: true
+    properties:
+      hibernate:
+        globally_quoted_identifiers: true
+        format_sql: true
+        highlight_sql: true
+        use_sql_comments: true
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace
+    org.hibernate.type.descriptor.sql: trace
+
+springdoc:
+  packages-to-scan: kr.mayb.controller
+  api-docs:
+    path: /docs
+    groups.enabled: false
+  swagger-ui:
+    path: /docs/ui
+    display-operation-id: true
+    syntax-highlight.theme: monokai
+    doc-expansion: none
+
+encryption:
+  secret-key: "0123456789abcdef0123456789abcdef"
+
+jwt:
+  secret:
+    access: "EeVFzsvyRolaBwFtzi6AoXdlrahGQPZ/RlqxL5Ex+evxDWEWQmlBNP3JDer1cN8kQWJBhv3dLPmvfHfwXh57Tg=="
+    refresh: "h/Zj3f1ZmwfzIx5QV7slxyahMKkh+Zg1fH5Ag3tFwoaEFUN/TV+bLu/rCU9I6lijhgrRBbrhANJzZlXHZrog7g=="
