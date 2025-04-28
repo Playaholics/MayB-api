@@ -6,18 +6,17 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import kr.mayb.dto.AuthDto;
+import kr.mayb.dto.MemberDto;
 import kr.mayb.dto.MemberSignupRequest;
 import kr.mayb.security.DenyAll;
 import kr.mayb.security.PermitAll;
+import kr.mayb.security.PermitAuthenticated;
 import kr.mayb.service.AuthService;
 import kr.mayb.util.response.ApiResponse;
 import kr.mayb.util.response.Responses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Auth", description = "인증 관련 API")
 @DenyAll
@@ -26,6 +25,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+
+    @Operation(summary = "유저정보")
+    @PermitAuthenticated
+    @GetMapping("/auth/me")
+    public ResponseEntity<ApiResponse<MemberDto>> me() {
+        MemberDto response = authService.getInfo();
+        return Responses.ok(response);
+    }
 
     @Operation(summary = "회원가입")
     @PermitAll
