@@ -10,3 +10,10 @@ server.compression.enabled: true
 
 spring.mvc.pathmatch.matching-strategy: ant-path-matcher
 spring.sleuth.sampler.probability: 0.1
+
+spring:
+  cloud:
+    gcp:
+      storage:
+        project-id: mayb-api-458206
+        bucket: mayb-bucket

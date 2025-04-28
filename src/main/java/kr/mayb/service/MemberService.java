@@ -5,8 +5,10 @@ import kr.mayb.data.model.Authority;
 import kr.mayb.data.model.Member;
 import kr.mayb.data.repository.AuthorityRepository;
 import kr.mayb.data.repository.MemberRepository;
+import kr.mayb.dto.MemberDto;
 import kr.mayb.enums.AccountStatus;
 import kr.mayb.enums.AuthorityName;
+import kr.mayb.error.ResourceNotFoundException;
 import kr.mayb.security.AESGCMEncoder;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -51,5 +53,20 @@ public class MemberService {
 
     public Optional<Member> findMember(long memberId) {
         return memberRepository.findById(memberId);
+    }
+
+    @Transactional
+    public Member updateProfile(long memberId, String profileUrl) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new ResourceNotFoundException("Member not found" + memberId));
+
+        member.setProfileUrl(profileUrl);
+
+        return memberRepository.save(member);
+    }
+
+    public MemberDto convertToMemberDto(Member member) {
+        String contact = aesgcmEncoder.decrypt(member.getContact());
+        return MemberDto.of(member, contact);
     }
 }

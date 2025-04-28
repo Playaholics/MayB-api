@@ -18,6 +18,8 @@ public class MemberDto {
 
     private String name;
 
+    private String profileUrl;
+
     private Gender gender;
 
     private LocalDate birthdate;
@@ -37,6 +39,7 @@ public class MemberDto {
                 member.getId(),
                 member.getEmail(),
                 member.getName(),
+                member.getProfileUrl(),
                 member.getGender(),
                 member.getBirthdate(),
                 member.getOccupation(),
