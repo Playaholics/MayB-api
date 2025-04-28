@@ -5,7 +5,7 @@ on:
 name: "Remove feature from Cloud Run"
 
 env:
-  PROJECT_ID: mayb-api
+  PROJECT_ID: mayb-api-458206
   REGION: asia-northeast1
 
 jobs:
@@ -24,7 +24,7 @@ jobs:
 
       - uses: 'google-github-actions/auth@v2'
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          credentials_json: ${{ secrets.GCP_SA_KEY2 }}
 
       - uses: 'google-github-actions/setup-gcloud@v1'
         with:
