@@ -10,9 +10,7 @@ public class GcsConfig {
 
     @Bean
     public Storage storage() {
-
         StorageOptions defaultInstance = StorageOptions.getDefaultInstance();
-        System.out.printf("gcp_key: " + defaultInstance.getCredentials());
         return defaultInstance.getService();
     }
 }

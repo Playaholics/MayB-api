@@ -1,6 +1,5 @@
 package kr.mayb.service;
 
-import com.google.cloud.storage.Blob;
 import kr.mayb.enums.GcsPath;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,9 +27,9 @@ public class ImageService {
         String fullBlobName = GcsPath.getValue(type) + uuidName;
 
         // Save in GCS bucket async
-        Blob uploaded = gcsService.upload(file, fullBlobName);
-        return uploaded.getSelfLink();
-//        return String.format(GCS_IMAGE_URL_PREFIX, bucketName, fullBlobName);
+        gcsService.upload(file, fullBlobName);
+
+        return String.format(GCS_IMAGE_URL_PREFIX, bucketName, fullBlobName);
     }
 
     private String generateUniqueFileName() {

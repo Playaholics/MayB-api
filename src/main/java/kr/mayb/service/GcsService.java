@@ -1,6 +1,5 @@
 package kr.mayb.service;
 
-import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
@@ -8,6 +7,7 @@ import kr.mayb.error.ExternalApiException;
 import kr.mayb.util.ImgCompressUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,8 +22,8 @@ public class GcsService {
     @Value("${spring.cloud.gcp.storage.bucket}")
     private String bucketName;
 
-    //    @Async("mayb-taskExecutor")
-    public Blob upload(MultipartFile file, String fullBlobName) {
+    @Async("mayb-taskExecutor")
+    public void upload(MultipartFile file, String fullBlobName) {
         BlobId blobId = BlobId.of(bucketName, fullBlobName);
         BlobInfo info = BlobInfo.newBuilder(blobId)
                 .setContentType(WEBP_EXTENSION)
@@ -32,7 +32,7 @@ public class GcsService {
         try {
             // Convert to .webp for compression
             byte[] converted = ImgCompressUtils.convertToWebp(file.getBytes());
-            return storage.create(info, converted);
+            storage.create(info, converted);
         } catch (Exception e) {
             throw new ExternalApiException("Failed to upload file to GCS: " + e.getMessage());
         }
