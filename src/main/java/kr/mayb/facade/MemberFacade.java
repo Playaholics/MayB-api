@@ -1,7 +1,7 @@
 package kr.mayb.facade;
 
 import kr.mayb.dto.MemberDto;
-import kr.mayb.enums.GcsFolderPath;
+import kr.mayb.enums.GcsPath;
 import kr.mayb.service.ImageService;
 import kr.mayb.service.MemberService;
 import kr.mayb.util.ContextUtils;
@@ -19,7 +19,7 @@ public class MemberFacade {
 
     public MemberDto updateProfile(MultipartFile file) {
         MemberDto member = ContextUtils.loadMember();
-        String profileUrl = imageService.upload(file, GcsFolderPath.PROFILE);
+        String profileUrl = imageService.upload(file, GcsPath.PROFILE);
 
         return memberService.updateProfile(member.getMemberId(), profileUrl);
     }
