@@ -7,7 +7,6 @@ import kr.mayb.error.ExternalApiException;
 import kr.mayb.util.ImgCompressUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,7 +21,7 @@ public class GcsService {
     @Value("${spring.cloud.gcp.storage.bucket}")
     private String bucketName;
 
-    @Async("mayb-taskExecutor")
+    //    @Async("mayb-taskExecutor")
     public void upload(MultipartFile file, String fullBlobName) {
         BlobId blobId = BlobId.of(bucketName, fullBlobName);
         BlobInfo info = BlobInfo.newBuilder(blobId)
