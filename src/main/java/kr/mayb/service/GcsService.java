@@ -3,46 +3,39 @@ package kr.mayb.service;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
-import kr.mayb.enums.GcsFolderPath;
+import kr.mayb.error.ExternalApiException;
+import kr.mayb.util.ImgCompressUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class GcsService {
+
+    private static final String WEBP_EXTENSION = ".webp";
 
     private final Storage storage;
 
     @Value("${spring.cloud.gcp.storage.bucket}")
     private String bucketName;
 
-    public String uploadFile(MultipartFile file, GcsFolderPath type) {
+    @Async("mayb-taskExecutor")
+    public void upload(MultipartFile file, String fullBlobName) {
+        BlobId blobId = BlobId.of(bucketName, fullBlobName);
+        BlobInfo info = BlobInfo.newBuilder(blobId)
+                .setContentType(WEBP_EXTENSION)
+                .build();
+
         try {
-            String originalFilename = file.getOriginalFilename();
-            String contentType = file.getContentType();
+            // Convert to .webp for compression
+            byte[] converted = ImgCompressUtils.convertToWebp(file.getBytes());
 
-            String blobName = generateUniqueFileName(originalFilename);
-            String fullBlobName = GcsFolderPath.getValue(type) + blobName;
-
-            BlobId blobId = BlobId.of(bucketName, fullBlobName);
-            BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
-                    .setContentType(contentType)
-                    .build();
-
-            storage.create(blobInfo, file.getBytes());
-
-            return String.format("https://storage.googleapis.com/%s/%s", bucketName, fullBlobName);
+            storage.create(info, converted);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Failed to upload file to GCS: " + e.getMessage());
+            throw new ExternalApiException("Failed to upload file to GCS: " + e.getMessage());
         }
-    }
-
-    private String generateUniqueFileName(String originalFilename) {
-        String uuid = UUID.randomUUID().toString();
-        return uuid + "-" + originalFilename;
     }
 }

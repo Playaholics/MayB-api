@@ -56,16 +56,17 @@ public class MemberService {
     }
 
     @Transactional
-    public Member updateProfile(long memberId, String profileUrl) {
+    public MemberDto updateProfile(long memberId, String profileUrl) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ResourceNotFoundException("Member not found" + memberId));
 
         member.setProfileUrl(profileUrl);
 
-        return memberRepository.save(member);
+        Member saved = memberRepository.save(member);
+        return convertToMemberDto(saved);
     }
 
-    public MemberDto convertToMemberDto(Member member) {
+    private MemberDto convertToMemberDto(Member member) {
         String contact = aesgcmEncoder.decrypt(member.getContact());
         return MemberDto.of(member, contact);
     }

@@ -1,4 +1,4 @@
-package kr.mayb.app;
+package kr.mayb;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
