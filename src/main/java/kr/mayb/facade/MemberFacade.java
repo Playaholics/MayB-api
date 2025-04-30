@@ -1,8 +1,9 @@
 package kr.mayb.facade;
 
+import io.micrometer.common.util.StringUtils;
 import kr.mayb.dto.MemberDto;
 import kr.mayb.dto.MemberUpdateRequest;
-import kr.mayb.enums.GcsPath;
+import kr.mayb.enums.GcsBucketPath;
 import kr.mayb.service.ImageService;
 import kr.mayb.service.MemberService;
 import kr.mayb.util.ContextUtils;
@@ -20,7 +21,12 @@ public class MemberFacade {
 
     public MemberDto updateProfile(MultipartFile file) {
         MemberDto member = ContextUtils.loadMember();
-        String profileUrl = imageService.upload(file, GcsPath.PROFILE);
+        String profileUrl = imageService.upload(file, GcsBucketPath.PROFILE);
+
+        if (StringUtils.isNotBlank(member.getProfileUrl())) {
+            // Delete the old profile image if it exists
+            imageService.delete(member.getProfileUrl(), GcsBucketPath.PROFILE);
+        }
 
         return memberService.updateProfile(member.getMemberId(), profileUrl);
     }

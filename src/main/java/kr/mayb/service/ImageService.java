@@ -1,8 +1,8 @@
 package kr.mayb.service;
 
-import kr.mayb.enums.GcsPath;
+import kr.mayb.enums.GcsBucketPath;
 import kr.mayb.error.BadRequestException;
-import kr.mayb.util.ImgCompressUtils;
+import kr.mayb.util.ImageUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,13 +19,16 @@ public class ImageService {
 
     private final GcsService gcsService;
 
-    public String upload(MultipartFile file, GcsPath type) {
+    public String upload(MultipartFile file, GcsBucketPath pathType) {
+        ImageUtils.validateImageFile(file);
+
         String uuidName = generateUniqueFileName();
-        String fullBlobName = GcsPath.getValue(type) + uuidName;
+        String fullBlobName = GcsBucketPath.getPath(pathType) + uuidName;
 
         try {
             // Convert to .webp for compression
-            byte[] converted = ImgCompressUtils.convertToWebp(file.getBytes());
+            byte[] converted = ImageUtils.convertToWebp(file.getBytes());
+
             return gcsService.upload(converted, fullBlobName);
         } catch (Exception e) {
             throw new BadRequestException("Failed to upload image: " + file.getOriginalFilename());
@@ -39,5 +42,12 @@ public class ImageService {
                 .append(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC))
                 .append(WEBP_EXTENSION)
                 .toString();
+    }
+
+    public void delete(String profileUrl, GcsBucketPath pathType) {
+        String uuidName = profileUrl.substring(profileUrl.lastIndexOf("/") + 1);
+        String fullBlobName = GcsBucketPath.getPath(pathType) + uuidName;
+
+        gcsService.delete(fullBlobName);
     }
 }

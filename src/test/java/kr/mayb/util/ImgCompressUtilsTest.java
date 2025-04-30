@@ -23,7 +23,7 @@ public class ImgCompressUtilsTest {
         byte[] bytes = Files.readAllBytes(path);
 
         // when
-        byte[] converted = ImgCompressUtils.convertToWebp(bytes);
+        byte[] converted = ImageUtils.convertToWebp(bytes);
 
         // then
         double originalFileSizeKB = testFile.length() / 1024.0;
@@ -46,7 +46,7 @@ public class ImgCompressUtilsTest {
         byte[] bytes = Files.readAllBytes(path);
 
         // when
-        byte[] converted = ImgCompressUtils.convertToWebpLossless(bytes);
+        byte[] converted = ImageUtils.convertToWebpLossless(bytes);
 
         // then
         double originalFileSizeKB = testFile.length() / 1024.0;
