@@ -1,8 +1,9 @@
 package kr.mayb.service;
 
 import kr.mayb.enums.GcsPath;
+import kr.mayb.error.BadRequestException;
+import kr.mayb.util.ImgCompressUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,21 +16,20 @@ import java.util.UUID;
 public class ImageService {
 
     private static final String WEBP_EXTENSION = ".webp";
-    public static final String GCS_IMAGE_URL_PREFIX = "https://storage.googleapis.com/%s/%s";
 
     private final GcsService gcsService;
-
-    @Value("${spring.cloud.gcp.storage.bucket}")
-    private String bucketName;
 
     public String upload(MultipartFile file, GcsPath type) {
         String uuidName = generateUniqueFileName();
         String fullBlobName = GcsPath.getValue(type) + uuidName;
 
-        // Save in GCS bucket async
-        gcsService.upload(file, fullBlobName);
-
-        return String.format(GCS_IMAGE_URL_PREFIX, bucketName, fullBlobName);
+        try {
+            // Convert to .webp for compression
+            byte[] converted = ImgCompressUtils.convertToWebp(file.getBytes());
+            return gcsService.upload(converted, fullBlobName);
+        } catch (Exception e) {
+            throw new BadRequestException("Failed to upload image: " + file.getOriginalFilename());
+        }
     }
 
     private String generateUniqueFileName() {

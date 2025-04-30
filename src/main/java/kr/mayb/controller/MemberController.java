@@ -30,5 +30,4 @@ public class MemberController {
         MemberDto response = memberFacade.updateProfile(file);
         return Responses.ok(response);
     }
-
 }

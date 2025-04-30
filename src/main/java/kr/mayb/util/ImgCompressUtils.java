@@ -15,9 +15,9 @@ public class ImgCompressUtils {
                     .fromBytes(imageBytes)
                     .bytes(WebpWriter.DEFAULT);
         } catch (IOException e) {
-            throw new ImageConversionException("Fail to compress img: " + e.getMessage());
+            throw new ImageConversionException("Fail to convert to webp: " + e.getMessage());
         } catch (Exception e) {
-            throw new BadRequestException("Fail to compress img");
+            throw new BadRequestException("Fail to convert to webp");
         }
     }
 
@@ -27,9 +27,9 @@ public class ImgCompressUtils {
                     .fromBytes(imageBytes)
                     .bytes(WebpWriter.DEFAULT.withLossless());
         } catch (IOException e) {
-            throw new ImageConversionException("Fail to compress img: " + e.getMessage());
+            throw new ImageConversionException("Fail to convert to webp: " + e.getMessage());
         } catch (Exception e) {
-            throw new BadRequestException("Fail to compress img");
+            throw new BadRequestException("Fail to convert to webp");
         }
     }
 }

@@ -9,11 +9,9 @@ import org.springframework.context.annotation.Configuration;
 @Slf4j
 @Configuration
 public class GcsConfig {
-
     @Bean
     public Storage storage() {
         StorageOptions defaultInstance = StorageOptions.getDefaultInstance();
-        log.warn("-------------GCP Credential: " + defaultInstance.getCredentials().toString());
         return defaultInstance.getService();
     }
 }

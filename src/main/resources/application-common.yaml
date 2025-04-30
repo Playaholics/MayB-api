@@ -17,3 +17,8 @@ spring:
       storage:
         project-id: mayb-api-458206
         bucket: mayb-bucket
+
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
