@@ -1,6 +1,7 @@
 package kr.mayb.facade;
 
 import kr.mayb.dto.MemberDto;
+import kr.mayb.dto.MemberUpdateRequest;
 import kr.mayb.enums.GcsPath;
 import kr.mayb.service.ImageService;
 import kr.mayb.service.MemberService;
@@ -22,5 +23,10 @@ public class MemberFacade {
         String profileUrl = imageService.upload(file, GcsPath.PROFILE);
 
         return memberService.updateProfile(member.getMemberId(), profileUrl);
+    }
+
+    public MemberDto updateMember(MemberUpdateRequest request) {
+        MemberDto member = ContextUtils.loadMember();
+        return memberService.updateMember(member.getMemberId(), request);
     }
 }
