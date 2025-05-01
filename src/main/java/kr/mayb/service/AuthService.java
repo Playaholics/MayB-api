@@ -10,6 +10,7 @@ import kr.mayb.error.BadRequestException;
 import kr.mayb.security.AESGCMEncoder;
 import kr.mayb.security.TokenDto;
 import kr.mayb.security.jwt.TokenHelper;
+import kr.mayb.util.ContextUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -27,6 +28,12 @@ public class AuthService {
     private final AESGCMEncoder aesgcmEncoder;
     private final PasswordEncoder passwordEncoder;
 
+    public MemberDto getInfo() {
+        return ContextUtils.getCurrentMember()
+                .orElseThrow(() -> new UsernameNotFoundException("Member not found"));
+    }
+
+    @Transactional
     public AuthDto registerMember(MemberSignupRequest request) {
         if (isSignedUp(request.email())) {
             throw new BadRequestException("Already signed up email");
@@ -56,20 +63,6 @@ public class AuthService {
     }
 
     @Transactional
-    private AuthDto login(Member member) {
-        String contact = aesgcmEncoder.decrypt(member.getContact());
-        MemberDto memberDto = MemberDto.of(member, contact);
-        TokenDto accessToken = tokenHelper.generateAccessToken(member);
-        TokenDto refreshToken = tokenHelper.generateRefreshToken(member);
-
-        return new AuthDto(memberDto, accessToken, refreshToken);
-    }
-
-    private boolean isSignedUp(String email) {
-        return memberService.existsByEmail(email);
-    }
-
-    @Transactional
     public AuthDto refresh(String refreshToken) {
         Claims claims = tokenHelper.getRefreshClaims(refreshToken);
         Integer memberId = claims.get("id", Integer.class);
@@ -82,5 +75,18 @@ public class AuthService {
 
     public void logout(String refreshToken) {
         tokenHelper.removeRefreshToken(refreshToken);
+    }
+
+    private boolean isSignedUp(String email) {
+        return memberService.existsByEmail(email);
+    }
+
+    private AuthDto login(Member member) {
+        String contact = aesgcmEncoder.decrypt(member.getContact());
+        MemberDto memberDto = MemberDto.of(member, contact);
+        TokenDto accessToken = tokenHelper.generateAccessToken(member);
+        TokenDto refreshToken = tokenHelper.generateRefreshToken(member);
+
+        return new AuthDto(memberDto, accessToken, refreshToken);
     }
 }

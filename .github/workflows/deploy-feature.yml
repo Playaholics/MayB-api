@@ -5,7 +5,7 @@ on:
 name: "Deploy feature to Cloud Run"
 
 env:
-  PROJECT_ID: mayb-api
+  PROJECT_ID: mayb-api-458206
   GAR_LOCATION: asia-northeast3
   REPOSITORY: mayb-repo
   IMAGE_NAME: mayb-api
@@ -28,11 +28,12 @@ jobs:
 
       - uses: 'google-github-actions/auth@v2'
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          credentials_json: ${{ secrets.GCP_DEPLOY_SA_KEY }}
 
       - uses: 'google-github-actions/setup-gcloud@v2'
         with:
           project_id: '${{ env.PROJECT_ID }}'
+
       - name: 'Set variables'
         run: |-
           branch_name=$(echo "${{ github.head_ref }}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g' | sed -E 's/^-+|-+$//g')
@@ -45,6 +46,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
+
       - uses: gradle/gradle-build-action@v2
       - name: Make gradlew executable
         run: chmod +x ./gradlew

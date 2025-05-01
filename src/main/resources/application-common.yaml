@@ -10,3 +10,15 @@ server.compression.enabled: true
 
 spring.mvc.pathmatch.matching-strategy: ant-path-matcher
 spring.sleuth.sampler.probability: 0.1
+
+spring:
+  cloud:
+    gcp:
+      storage:
+        project-id: mayb-api-458206
+        bucket: mayb-bucket
+
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB

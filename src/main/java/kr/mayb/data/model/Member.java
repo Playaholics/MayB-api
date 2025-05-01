@@ -3,15 +3,14 @@ package kr.mayb.data.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import kr.mayb.enums.AccountStatus;
+import kr.mayb.enums.Gender;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
-import kr.mayb.enums.Gender;
-import org.hibernate.annotations.BatchSize;
 
 @Getter
 @Setter
@@ -33,6 +32,9 @@ public class Member extends BaseEntity{
     private String name;
 
     @Column
+    private String profileUrl;
+
+    @Column
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
@@ -50,6 +52,7 @@ public class Member extends BaseEntity{
 
     @Column
     private String idealType;
+
 
     @JsonIgnore
     @BatchSize(size = 10)
