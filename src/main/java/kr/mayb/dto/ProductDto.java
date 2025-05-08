@@ -1,11 +1,8 @@
 package kr.mayb.dto;
 
 import kr.mayb.data.model.Product;
-import kr.mayb.data.model.ProductDateTime;
-import kr.mayb.data.model.ProductTag;
 import kr.mayb.enums.ProductStatus;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public record ProductDto(
@@ -19,9 +16,9 @@ public record ProductDto(
         int originalPrice,
         int salePrice,
 
-        List<String> tags,
+        List<TagInfo> tags,
         List<GenderPrice> genderPrices,
-        List<LocalDateTime> dateTimes,
+        List<DateTimeInfo> dateTimes,
 
         long creatorId,
         long lastModifierId,
@@ -37,9 +34,9 @@ public record ProductDto(
                 product.getDescription(),
                 product.getOriginalPrice(),
                 product.getSalePrice(),
-                product.getProductTags().stream().map(ProductTag::getName).toList(),
+                product.getProductTags().stream().map(TagInfo::of).toList(),
                 product.getProductGenders().stream().map(GenderPrice::of).toList(),
-                product.getProductDateTimes().stream().map(ProductDateTime::getDateTime).toList(),
+                product.getProductDateTimes().stream().map(DateTimeInfo::of).toList(),
                 product.getCreatorId(),
                 product.getLastModifierId(),
                 product.getStatus()

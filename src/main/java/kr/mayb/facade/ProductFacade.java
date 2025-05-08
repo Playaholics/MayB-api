@@ -3,6 +3,7 @@ package kr.mayb.facade;
 import kr.mayb.dto.MemberDto;
 import kr.mayb.dto.ProductDto;
 import kr.mayb.dto.ProductRegistrationRequest;
+import kr.mayb.dto.ProductUpdateRequest;
 import kr.mayb.enums.AuthorityName;
 import kr.mayb.enums.GcsBucketPath;
 import kr.mayb.service.ImageService;
@@ -14,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -38,5 +40,25 @@ public class ProductFacade {
                 .anyMatch(name -> name == AuthorityName.ROLE_ADMIN);
 
         return productService.getProducts(isAdmin);
+    }
+
+    public ProductDto updateProduct(long productId, MultipartFile profileImage, MultipartFile detailImage, ProductUpdateRequest request) {
+        MemberDto admin = ContextUtils.loadMember();
+
+        Optional<String> profileUrl = Optional.ofNullable(profileImage)
+                .map(image -> imageService.upload(image, GcsBucketPath.PRODUCT_PROFILE));
+        Optional<String> detailUrl = Optional.ofNullable(detailImage)
+                .map(image -> imageService.upload(image, GcsBucketPath.PRODUCT_DETAIL));
+
+        return productService.updateProduct(productId, profileUrl, detailUrl, request, admin.getMemberId());
+    }
+
+    public void deleteProduct(long productId) {
+        productService.delete(productId);
+    }
+
+    public void changeStatus(long productId, boolean active) {
+        MemberDto admin = ContextUtils.loadMember();
+        productService.changeStatus(productId, active, admin.getMemberId());
     }
 }

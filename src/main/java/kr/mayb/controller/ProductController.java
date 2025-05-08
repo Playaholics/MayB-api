@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import kr.mayb.dto.ProductDto;
 import kr.mayb.dto.ProductRegistrationRequest;
+import kr.mayb.dto.ProductUpdateRequest;
 import kr.mayb.facade.ProductFacade;
 import kr.mayb.security.DenyAll;
 import kr.mayb.security.PermitAdmin;
@@ -15,10 +16,7 @@ import kr.mayb.util.response.ListResponse;
 import kr.mayb.util.response.Responses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -48,5 +46,32 @@ public class ProductController {
     public ResponseEntity<ApiResponse<ListResponse<ProductDto, Void>>> getProducts() {
         List<ProductDto> response = productFacade.getProducts();
         return Responses.ok(response);
+    }
+
+    @Operation(summary = "상품 수정")
+    @PermitAdmin
+    @PutMapping("/products/{productId}")
+    public ResponseEntity<ApiResponse<ProductDto>> updateProduct(@PathVariable long productId,
+                                                                 @RequestPart(value = "profile", required = false) MultipartFile profileImage,
+                                                                 @RequestPart(value = "detail", required = false) MultipartFile detailImage,
+                                                                 @RequestPart(value = "product") @Valid ProductUpdateRequest request) {
+        ProductDto response = productFacade.updateProduct(productId, profileImage, detailImage, request);
+        return Responses.ok(response);
+    }
+
+    @Operation(summary = "상품 삭제")
+    @PermitAdmin
+    @DeleteMapping("/products/{productId}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable long productId) {
+        productFacade.deleteProduct(productId);
+        return Responses.noContent();
+    }
+
+    @Operation(summary = "상품 목록에서 숨기기 확성화, 비활성화")
+    @PermitAdmin
+    @PutMapping("/products/{productId}/{status}")
+    public ResponseEntity<Void> changeStatus(@PathVariable long productId, @PathVariable boolean status) {
+        productFacade.changeStatus(productId, status);
+        return Responses.ok();
     }
 }

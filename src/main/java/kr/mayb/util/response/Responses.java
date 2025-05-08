@@ -33,5 +33,4 @@ public class Responses {
     public static ResponseEntity<Void> noContent() {
         return ResponseEntity.noContent().build();
     }
-
 }
