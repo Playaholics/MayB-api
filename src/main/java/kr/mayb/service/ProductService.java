@@ -7,6 +7,8 @@ import kr.mayb.data.model.ProductDateTime;
 import kr.mayb.data.model.ProductGender;
 import kr.mayb.data.model.ProductTag;
 import kr.mayb.data.repository.ProductRepository;
+import kr.mayb.dto.GenderPrice;
+import kr.mayb.dto.ProductDto;
 import kr.mayb.dto.ProductRegistrationRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,12 +24,7 @@ public class ProductService {
     private final ProductRepository productRepository;
 
     @Transactional
-    public List<Product> registerProduct(ProductRegistrationRequest request, String profileUrl, String detailUrl, long creatorId) {
-        createProduct(request, profileUrl, detailUrl, creatorId);
-        return productRepository.findAll();
-    }
-
-    private void createProduct(ProductRegistrationRequest request, String profileUrl, String detailUrl, long creatorId) {
+    public ProductDto registerProduct(ProductRegistrationRequest request, String profileUrl, String detailUrl, long creatorId) {
         Product product = new Product();
         product.setName(request.name());
         product.setOriginalPrice(request.originalPrice());
@@ -38,12 +35,13 @@ public class ProductService {
         product.setCreatorId(creatorId);
         product.setLastModifierId(creatorId);
 
-        saveAdditionalInfo(request.tags(), request.dateTimes(), request.genders(), product);
+        saveAdditionalInfo(request.tags(), request.dateTimes(), request.genderPrices(), product);
 
-        productRepository.save(product);
+        Product saved = productRepository.save(product);
+        return ProductDto.of(saved);
     }
 
-    private void saveAdditionalInfo(List<String> tags, List<LocalDateTime> dateTimes, List<String> genders, Product product) {
+    private void saveAdditionalInfo(List<String> tags, List<LocalDateTime> dateTimes, List<GenderPrice> genderPrices, Product product) {
         List<ProductTag> productTags = tags.stream()
                 .filter(StringUtils::isNotBlank)
                 .map(tag -> {
@@ -64,11 +62,11 @@ public class ProductService {
                 })
                 .toList();
 
-        List<ProductGender> productGenders = genders.stream()
-                .filter(StringUtils::isNotBlank)
-                .map(gender -> {
+        List<ProductGender> productGenders = genderPrices.stream()
+                .map(genderPrice -> {
                     ProductGender productGender = new ProductGender();
-                    productGender.setGender(gender);
+                    productGender.setGender(genderPrice.gender());
+                    productGender.setPrice(genderPrice.price());
                     productGender.setProduct(product);
                     return productGender;
                 })

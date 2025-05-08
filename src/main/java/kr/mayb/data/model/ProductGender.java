@@ -17,6 +17,9 @@ public class ProductGender extends BaseEntity {
     @Column(nullable = false)
     private String gender;
 
+    @Column(nullable = false)
+    private int price;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;

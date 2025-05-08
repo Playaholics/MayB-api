@@ -1,7 +1,8 @@
 package kr.mayb.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
@@ -18,16 +19,16 @@ public record ProductRegistrationRequest(
         @NotBlank
         String description,
 
-        @NotEmpty
+        @NotNull
         @Size(min = 1)
         List<String> tags,
 
-        @NotEmpty
+        @NotNull
         @Size(min = 1)
         List<LocalDateTime> dateTimes,
 
-        @NotEmpty
-        @Size(min = 1)
-        List<String> genders
+        @Valid
+        @NotNull
+        List<GenderPrice> genderPrices
 ) {
 }

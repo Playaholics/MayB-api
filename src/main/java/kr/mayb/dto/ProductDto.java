@@ -2,7 +2,6 @@ package kr.mayb.dto;
 
 import kr.mayb.data.model.Product;
 import kr.mayb.data.model.ProductDateTime;
-import kr.mayb.data.model.ProductGender;
 import kr.mayb.data.model.ProductTag;
 
 import java.time.LocalDateTime;
@@ -19,9 +18,9 @@ public record ProductDto(
         int originalPrice,
         int salePrice,
 
-        List<String> productTags,
-        List<String> productGenders,
-        List<LocalDateTime> productDateTimes,
+        List<String> tags,
+        List<GenderPrice> genderPrices,
+        List<LocalDateTime> dateTimes,
 
         long creatorId,
         long lastModifierId
@@ -36,7 +35,7 @@ public record ProductDto(
                 product.getOriginalPrice(),
                 product.getSalePrice(),
                 product.getProductTags().stream().map(ProductTag::getName).toList(),
-                product.getProductGenders().stream().map(ProductGender::getGender).toList(),
+                product.getProductGenders().stream().map(GenderPrice::of).toList(),
                 product.getProductDateTimes().stream().map(ProductDateTime::getDateTime).toList(),
                 product.getCreatorId(),
                 product.getLastModifierId()
