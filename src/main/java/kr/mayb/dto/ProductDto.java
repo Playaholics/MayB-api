@@ -3,6 +3,7 @@ package kr.mayb.dto;
 import kr.mayb.data.model.Product;
 import kr.mayb.data.model.ProductDateTime;
 import kr.mayb.data.model.ProductTag;
+import kr.mayb.enums.ProductStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,7 +24,9 @@ public record ProductDto(
         List<LocalDateTime> dateTimes,
 
         long creatorId,
-        long lastModifierId
+        long lastModifierId,
+
+        ProductStatus status
 ) {
     public static ProductDto of(Product product) {
         return new ProductDto(
@@ -38,7 +41,8 @@ public record ProductDto(
                 product.getProductGenders().stream().map(GenderPrice::of).toList(),
                 product.getProductDateTimes().stream().map(ProductDateTime::getDateTime).toList(),
                 product.getCreatorId(),
-                product.getLastModifierId()
+                product.getLastModifierId(),
+                product.getStatus()
         );
     }
 }

@@ -10,12 +10,14 @@ import kr.mayb.data.repository.ProductRepository;
 import kr.mayb.dto.GenderPrice;
 import kr.mayb.dto.ProductDto;
 import kr.mayb.dto.ProductRegistrationRequest;
+import kr.mayb.enums.ProductStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +36,7 @@ public class ProductService {
         product.setDescription(request.description());
         product.setCreatorId(creatorId);
         product.setLastModifierId(creatorId);
+        product.setStatus(ProductStatus.ACTIVE);
 
         saveAdditionalInfo(request.tags(), request.dateTimes(), request.genderPrices(), product);
 
@@ -75,5 +78,23 @@ public class ProductService {
         product.setProductTags(productTags);
         product.setProductDateTimes(productDateTimes);
         product.setProductGenders(productGenders);
+    }
+
+    public List<ProductDto> getProducts(boolean isAdmin) {
+        List<Product> products = productRepository.findAll();
+        Stream<Product> stream = products
+                .stream()
+                .filter(Objects::nonNull);
+
+        if (isAdmin) {
+            return stream
+                    .map(ProductDto::of)
+                    .toList();
+        }
+
+        return stream
+                .filter(product -> product.getStatus() == ProductStatus.ACTIVE)
+                .map(ProductDto::of)
+                .toList();
     }
 }

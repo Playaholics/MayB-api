@@ -1,6 +1,7 @@
 package kr.mayb.data.model;
 
 import jakarta.persistence.*;
+import kr.mayb.enums.ProductStatus;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
@@ -42,6 +43,10 @@ public class Product extends BaseEntity {
 
     @Column
     private long lastModifierId;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private ProductStatus status;
 
     @BatchSize(size = 20)
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
