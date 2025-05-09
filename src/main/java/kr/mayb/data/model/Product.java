@@ -54,9 +54,9 @@ public class Product extends BaseEntity {
 
     @BatchSize(size = 20)
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    private List<ProductGender> productGenders = new ArrayList<>();
+    private List<ProductGenderPrice> productGenderPrices = new ArrayList<>();
 
     @BatchSize(size = 20)
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    private List<ProductDateTime> productDateTimes = new ArrayList<>();
+    private List<ProductSchedule> productSchedules = new ArrayList<>();
 }

@@ -25,7 +25,7 @@ public record ProductUpdateRequest(
 
         @NotNull
         @Size(min = 1)
-        List<LocalDateTime> dateTimes,
+        List<LocalDateTime> schedules,
 
         @Valid
         @NotNull
