@@ -22,7 +22,7 @@ public class ProductDto {
     private final int originalPrice;
     private final int discountPrice;
 
-    private final List<TagInfo> tags;
+    private final List<String> tags;
     private final List<GenderPrice> prices;
     private final List<ScheduleInfo> schedules;
 
@@ -39,7 +39,7 @@ public class ProductDto {
         this.description = product.getDescription();
         this.originalPrice = product.getOriginalPrice();
         this.discountPrice = product.getDiscountPrice();
-        this.tags = product.getProductTags().stream().map(TagInfo::of).toList();
+        this.tags = List.of(product.getTags().split("\\|"));
         this.prices = product.getProductGenderPrices().stream().map(GenderPrice::of).toList();
         this.schedules = product.getProductSchedules().stream().map(ScheduleInfo::of).toList();
         this.status = product.getStatus();

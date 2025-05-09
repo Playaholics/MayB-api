@@ -48,9 +48,8 @@ public class Product extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ProductStatus status;
 
-    @BatchSize(size = 20)
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    private List<ProductTag> productTags = new ArrayList<>();
+    @Column
+    private String tags;
 
     @BatchSize(size = 20)
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)

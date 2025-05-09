@@ -1,15 +1,12 @@
 package kr.mayb.service;
 
-import io.micrometer.common.util.StringUtils;
 import jakarta.transaction.Transactional;
 import kr.mayb.data.model.Product;
 import kr.mayb.data.model.ProductGenderPrice;
 import kr.mayb.data.model.ProductSchedule;
-import kr.mayb.data.model.ProductTag;
 import kr.mayb.data.repository.ProductGenderPriceRepository;
 import kr.mayb.data.repository.ProductRepository;
 import kr.mayb.data.repository.ProductScheduleRepository;
-import kr.mayb.data.repository.ProductTagRepository;
 import kr.mayb.dto.*;
 import kr.mayb.enums.GcsBucketPath;
 import kr.mayb.enums.ProductStatus;
@@ -32,7 +29,6 @@ public class ProductService {
     private final ImageService imageService;
 
     private final ProductRepository productRepository;
-    private final ProductTagRepository productTagRepository;
     private final ProductGenderPriceRepository productGenderPriceRepository;
     private final ProductScheduleRepository productScheduleRepository;
 
@@ -48,24 +44,15 @@ public class ProductService {
         product.setCreatorId(creatorId);
         product.setLastModifierId(creatorId);
         product.setStatus(ProductStatus.ACTIVE);
+        product.setTags(String.join("|", request.tags()));
 
-        saveAdditionalInfo(request.tags(), request.schedules(), request.genderPrices(), product);
+        saveAdditionalInfo(request.schedules(), request.genderPrices(), product);
 
         Product saved = productRepository.save(product);
         return ProductDto.of(saved, true);
     }
 
-    private void saveAdditionalInfo(List<String> tags, List<LocalDateTime> schedules, List<GenderPrice> genderPrices, Product product) {
-        List<ProductTag> productTags = tags.stream()
-                .filter(StringUtils::isNotBlank)
-                .map(tag -> {
-                    ProductTag productTag = new ProductTag();
-                    productTag.setName(tag);
-                    productTag.setProduct(product);
-                    return productTag;
-                })
-                .collect(Collectors.toList());
-
+    private void saveAdditionalInfo(List<LocalDateTime> schedules, List<GenderPrice> genderPrices, Product product) {
         List<ProductSchedule> productSchedules = schedules.stream()
                 .filter(Objects::nonNull)
                 .map(time -> {
@@ -86,7 +73,6 @@ public class ProductService {
                 })
                 .collect(Collectors.toList());
 
-        product.setProductTags(productTags);
         product.setProductSchedules(productSchedules);
         product.setProductGenderPrices(productGenderPrices);
     }
@@ -131,6 +117,7 @@ public class ProductService {
         product.setOriginalPrice(request.originalPrice());
         product.setDiscountPrice(request.salePrice());
         product.setDescription(request.description());
+        product.setTags(String.join("|", request.tags()));
 
         updateProductImage(profileUrl, detailUrl, product);
         clearAndUpdateAdditionalInfo(request, product);
@@ -178,10 +165,9 @@ public class ProductService {
     }
 
     private void clearAndUpdateAdditionalInfo(ProductUpdateRequest request, Product product) {
-        productTagRepository.deleteByProduct(product);
         productGenderPriceRepository.deleteByProduct(product);
         productScheduleRepository.deleteByProduct(product);
-        saveAdditionalInfo(request.tags(), request.schedules(), request.genderPrices(), product);
+        saveAdditionalInfo(request.schedules(), request.genderPrices(), product);
     }
 
     private ProductSchedule getSchedule(long scheduleId, Product product) {
