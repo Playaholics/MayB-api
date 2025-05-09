@@ -48,6 +48,14 @@ public class ProductController {
         return Responses.ok(response);
     }
 
+    @Operation(summary = "상품 단건 조회")
+    @PermitAll
+    @GetMapping("/products/{productId}")
+    public ResponseEntity<ApiResponse<ProductDto>> getProduct(@PathVariable long productId) {
+        ProductDto response = productFacade.getProduct(productId);
+        return Responses.ok(response);
+    }
+
     @Operation(summary = "상품 수정")
     @PermitAdmin
     @PutMapping("/products/{productId}")

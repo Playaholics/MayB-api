@@ -16,7 +16,9 @@ import kr.mayb.dto.ProductRegistrationRequest;
 import kr.mayb.dto.ProductUpdateRequest;
 import kr.mayb.enums.GcsBucketPath;
 import kr.mayb.enums.ProductStatus;
+import kr.mayb.error.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -53,7 +55,7 @@ public class ProductService {
         saveAdditionalInfo(request.tags(), request.dateTimes(), request.genderPrices(), product);
 
         Product saved = productRepository.save(product);
-        return ProductDto.of(saved);
+        return ProductDto.of(saved, true);
     }
 
     private void saveAdditionalInfo(List<String> tags, List<LocalDateTime> dateTimes, List<GenderPrice> genderPrices, Product product) {
@@ -100,7 +102,7 @@ public class ProductService {
 
         if (isAdmin) {
             return stream
-                    .map(ProductDto::of)
+                    .map(product -> ProductDto.of(product, true))
                     .toList();
         }
 
@@ -110,10 +112,25 @@ public class ProductService {
                 .toList();
     }
 
+    public ProductDto getProduct(long productId, boolean isAdmin) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found.: " + productId));
+
+        if (isAdmin) {
+            return ProductDto.of(product, true);
+        }
+
+        if (product.getStatus() == ProductStatus.INACTIVE) {
+            throw new AccessDeniedException("Product is inactive.: " + productId);
+        }
+
+        return ProductDto.of(product);
+    }
+
     @Transactional
     public ProductDto updateProduct(long productId, Optional<String> profileUrl, Optional<String> detailUrl, ProductUpdateRequest request, long modifierId) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다.: " + productId));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found.: " + productId));
 
         product.setName(request.name());
         product.setOriginalPrice(request.originalPrice());
@@ -125,7 +142,7 @@ public class ProductService {
 
         product.setLastModifierId(modifierId);
         Product updated = productRepository.save(product);
-        return ProductDto.of(updated);
+        return ProductDto.of(updated, true);
     }
 
     @Transactional
@@ -136,7 +153,7 @@ public class ProductService {
     @Transactional
     public void changeStatus(long productId, boolean active, long memberId) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다.: " + productId));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found.: " + productId));
 
         if (active) {
             product.setStatus(ProductStatus.ACTIVE);

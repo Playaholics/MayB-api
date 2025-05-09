@@ -42,6 +42,16 @@ public class ProductFacade {
         return productService.getProducts(isAdmin);
     }
 
+    public ProductDto getProduct(long productId) {
+        boolean isAdmin = ContextUtils.getCurrentMember()
+                .map(MemberDto::getAuthorities)
+                .stream()
+                .flatMap(Collection::stream)
+                .anyMatch(name -> name == AuthorityName.ROLE_ADMIN);
+
+        return productService.getProduct(productId, isAdmin);
+    }
+
     public ProductDto updateProduct(long productId, MultipartFile profileImage, MultipartFile detailImage, ProductUpdateRequest request) {
         MemberDto admin = ContextUtils.loadMember();
 

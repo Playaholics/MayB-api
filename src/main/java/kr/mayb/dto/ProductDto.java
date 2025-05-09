@@ -2,44 +2,59 @@ package kr.mayb.dto;
 
 import kr.mayb.data.model.Product;
 import kr.mayb.enums.ProductStatus;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
-public record ProductDto(
-        long productId,
+@Getter
+@Setter
+@AllArgsConstructor
+public class ProductDto {
+    private final long productId;
 
-        String name,
-        String profileImageUrl,
-        String detailImageUrl,
-        String description,
+    private final String name;
+    private final String profileImageUrl;
+    private final String detailImageUrl;
+    private final String description;
 
-        int originalPrice,
-        int salePrice,
+    private final int originalPrice;
+    private final int salePrice;
 
-        List<TagInfo> tags,
-        List<GenderPrice> genderPrices,
-        List<DateTimeInfo> dateTimes,
+    private final List<TagInfo> tags;
+    private final List<GenderPrice> genderPrices;
+    private final List<DateTimeInfo> dateTimes;
 
-        long creatorId,
-        long lastModifierId,
+    private final ProductStatus status;
 
-        ProductStatus status
-) {
+    private Long creatorId;
+    private Long lastModifierId;
+
+    public ProductDto(Product product, boolean isAdmin) {
+        this.productId = product.getId();
+        this.name = product.getName();
+        this.profileImageUrl = product.getProfileImageUrl();
+        this.detailImageUrl = product.getDetailImageUrl();
+        this.description = product.getDescription();
+        this.originalPrice = product.getOriginalPrice();
+        this.salePrice = product.getSalePrice();
+        this.tags = product.getProductTags().stream().map(TagInfo::of).toList();
+        this.genderPrices = product.getProductGenders().stream().map(GenderPrice::of).toList();
+        this.dateTimes = product.getProductDateTimes().stream().map(DateTimeInfo::of).toList();
+        this.status = product.getStatus();
+
+        if (isAdmin) {
+            this.creatorId = product.getCreatorId();
+            this.lastModifierId = product.getLastModifierId();
+        }
+    }
+
     public static ProductDto of(Product product) {
-        return new ProductDto(
-                product.getId(),
-                product.getName(),
-                product.getProfileImageUrl(),
-                product.getDetailImageUrl(),
-                product.getDescription(),
-                product.getOriginalPrice(),
-                product.getSalePrice(),
-                product.getProductTags().stream().map(TagInfo::of).toList(),
-                product.getProductGenders().stream().map(GenderPrice::of).toList(),
-                product.getProductDateTimes().stream().map(DateTimeInfo::of).toList(),
-                product.getCreatorId(),
-                product.getLastModifierId(),
-                product.getStatus()
-        );
+        return new ProductDto(product, false);
+    }
+
+    public static ProductDto of(Product product, boolean isAdmin) {
+        return new ProductDto(product, isAdmin);
     }
 }
