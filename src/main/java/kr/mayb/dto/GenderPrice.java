@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import kr.mayb.data.model.ProductGenderPrice;
 
 public record GenderPrice(
-        long id,
+        long priceId,
         @NotBlank
         String gender,
         int price

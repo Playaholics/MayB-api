@@ -17,7 +17,7 @@ public class Order extends BaseEntity {
     private long id;
 
     @Column
-    private int totalAmount;
+    private int totalPrice;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -39,6 +39,6 @@ public class Order extends BaseEntity {
     @Column(nullable = false)
     private long memberId;
 
-    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    @Column(nullable = false)
     private boolean hasReviewed;
 }

@@ -27,7 +27,7 @@ public class Product extends BaseEntity {
     private int originalPrice;
 
     @Column
-    private int salePrice;
+    private int discountPrice;
 
     @Column
     private String profileImageUrl;

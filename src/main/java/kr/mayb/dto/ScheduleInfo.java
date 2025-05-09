@@ -5,7 +5,7 @@ import kr.mayb.data.model.ProductSchedule;
 import java.time.LocalDateTime;
 
 public record ScheduleInfo(
-        long id,
+        long scheduleId,
         LocalDateTime time
 ) {
     public static ScheduleInfo of(ProductSchedule schedule) {

@@ -6,14 +6,11 @@ import kr.mayb.data.model.Product;
 import kr.mayb.data.model.ProductGenderPrice;
 import kr.mayb.data.model.ProductSchedule;
 import kr.mayb.data.model.ProductTag;
-import kr.mayb.data.repository.ProductGenderRepository;
+import kr.mayb.data.repository.ProductGenderPriceRepository;
 import kr.mayb.data.repository.ProductRepository;
 import kr.mayb.data.repository.ProductScheduleRepository;
 import kr.mayb.data.repository.ProductTagRepository;
-import kr.mayb.dto.GenderPrice;
-import kr.mayb.dto.ProductDto;
-import kr.mayb.dto.ProductRegistrationRequest;
-import kr.mayb.dto.ProductUpdateRequest;
+import kr.mayb.dto.*;
 import kr.mayb.enums.GcsBucketPath;
 import kr.mayb.enums.ProductStatus;
 import kr.mayb.error.ResourceNotFoundException;
@@ -36,7 +33,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final ProductTagRepository productTagRepository;
-    private final ProductGenderRepository productGenderRepository;
+    private final ProductGenderPriceRepository productGenderPriceRepository;
     private final ProductScheduleRepository productScheduleRepository;
 
     @Transactional
@@ -44,7 +41,7 @@ public class ProductService {
         Product product = new Product();
         product.setName(request.name());
         product.setOriginalPrice(request.originalPrice());
-        product.setSalePrice(request.salePrice());
+        product.setDiscountPrice(request.salePrice());
         product.setProfileImageUrl(profileUrl);
         product.setDetailImageUrl(detailUrl);
         product.setDescription(request.description());
@@ -113,8 +110,7 @@ public class ProductService {
     }
 
     public ProductDto getProduct(long productId, boolean isAdmin) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found.: " + productId));
+        Product product = getProduct(productId);
 
         if (isAdmin) {
             return ProductDto.of(product, true);
@@ -129,12 +125,11 @@ public class ProductService {
 
     @Transactional
     public ProductDto updateProduct(long productId, Optional<String> profileUrl, Optional<String> detailUrl, ProductUpdateRequest request, long modifierId) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found.: " + productId));
+        Product product = getProduct(productId);
 
         product.setName(request.name());
         product.setOriginalPrice(request.originalPrice());
-        product.setSalePrice(request.salePrice());
+        product.setDiscountPrice(request.salePrice());
         product.setDescription(request.description());
 
         updateProductImage(profileUrl, detailUrl, product);
@@ -152,8 +147,7 @@ public class ProductService {
 
     @Transactional
     public void changeStatus(long productId, boolean active, long memberId) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found.: " + productId));
+        Product product = getProduct(productId);
 
         if (active) {
             product.setStatus(ProductStatus.ACTIVE);
@@ -162,6 +156,14 @@ public class ProductService {
         }
 
         product.setLastModifierId(memberId);
+    }
+
+    public OrderedProductItem findOrderedProductItem(long productId, long priceId, long scheduleId) {
+        Product product = getProduct(productId);
+        ProductGenderPrice genderPrice = getGenderPrice(priceId, product);
+        ProductSchedule schedule = getSchedule(scheduleId, product);
+
+        return OrderedProductItem.of(product, genderPrice, schedule);
     }
 
     private void updateProductImage(Optional<String> profileUrl, Optional<String> detailUrl, Product product) {
@@ -177,8 +179,23 @@ public class ProductService {
 
     private void clearAndUpdateAdditionalInfo(ProductUpdateRequest request, Product product) {
         productTagRepository.deleteByProduct(product);
-        productGenderRepository.deleteByProduct(product);
+        productGenderPriceRepository.deleteByProduct(product);
         productScheduleRepository.deleteByProduct(product);
         saveAdditionalInfo(request.tags(), request.schedules(), request.genderPrices(), product);
+    }
+
+    private ProductSchedule getSchedule(long scheduleId, Product product) {
+        return productScheduleRepository.findByIdAndProduct(scheduleId, product)
+                .orElseThrow(() -> new ResourceNotFoundException("Schedule not found: " + scheduleId));
+    }
+
+    private ProductGenderPrice getGenderPrice(long priceId, Product product) {
+        return productGenderPriceRepository.findByIdAndProduct(priceId, product)
+                .orElseThrow(() -> new ResourceNotFoundException("Price not found: " + priceId));
+    }
+
+    private Product getProduct(long productId) {
+        return productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
     }
 }
