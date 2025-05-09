@@ -53,7 +53,6 @@ public class Member extends BaseEntity{
     @Column
     private String idealType;
 
-
     @JsonIgnore
     @BatchSize(size = 10)
     @ManyToMany(fetch = FetchType.LAZY)
