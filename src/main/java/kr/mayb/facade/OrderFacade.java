@@ -54,6 +54,11 @@ public class OrderFacade {
         return PageResponse.of(orderInfoPage, getProductMetaData());
     }
 
+    public OrderInfo updatePaymentStatus(long orderId, long memberId, PaymentStatus status) {
+        Order updated = orderService.updatePaymentStatus(orderId, memberId, status);
+        return convertToOrderInfo(updated);
+    }
+
     private List<ProductSimple> getProductMetaData() {
         return productService.findAll()
                 .stream()

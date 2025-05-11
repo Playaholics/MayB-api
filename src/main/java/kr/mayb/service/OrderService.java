@@ -8,6 +8,7 @@ import kr.mayb.dto.OrderedProductItem;
 import kr.mayb.enums.OrderSort;
 import kr.mayb.enums.PaymentMethod;
 import kr.mayb.enums.PaymentStatus;
+import kr.mayb.error.ResourceNotFoundException;
 import kr.mayb.util.request.PageRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -48,5 +49,15 @@ public class OrderService {
                 .and(OrderSpecification.withPaymentStatus(paymentStatus));
 
         return orderRepository.findAll(spec, pageable);
+    }
+
+    @Transactional
+    public Order updatePaymentStatus(long orderId, long memberId, PaymentStatus paymentStatus) {
+        Order order = orderRepository.findByIdAndMemberId(orderId, memberId)
+                .orElseThrow(() -> new ResourceNotFoundException("There is no Order with orderId and memberId." + orderId + ", " + memberId));
+
+        order.setPaymentStatus(paymentStatus);
+
+        return orderRepository.save(order);
     }
 }

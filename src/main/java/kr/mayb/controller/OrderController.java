@@ -2,6 +2,8 @@ package kr.mayb.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import kr.mayb.dto.OrderInfo;
 import kr.mayb.dto.OrderRequest;
 import kr.mayb.dto.ProductSimple;
@@ -54,5 +56,22 @@ public class OrderController {
     ) {
         var response = orderFacade.getOrders(productId, paymentStatus, pageRequest);
         return Responses.ok(response);
+    }
+
+    @Operation(summary = "관리자 결제 상태 변경")
+    @PermitAdmin
+    @PatchMapping("orders/{orderId}/members/{memberId}/payment-status")
+    public ResponseEntity<ApiResponse<OrderInfo>> updatePaymentStatus(@PathVariable long orderId,
+                                                                      @PathVariable long memberId,
+                                                                      @RequestBody @Valid OrderController.PaymentStatusUpdateRequest request) {
+        OrderInfo response = orderFacade.updatePaymentStatus(orderId, memberId, request.status());
+        return Responses.ok(response);
+
+    }
+
+    private record PaymentStatusUpdateRequest(
+            @NotNull
+            PaymentStatus status
+    ) {
     }
 }
