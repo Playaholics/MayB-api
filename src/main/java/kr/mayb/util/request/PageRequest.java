@@ -21,11 +21,11 @@ public class PageRequest {
     private final String sort;
 
     public static PageRequest getDefault() {
-        return new PageRequest(0, 10, null);
+        return new PageRequest(0, 5, null);
     }
 
     public static Pageable defaultPageable() {
-        return defaultPageable(10);
+        return defaultPageable(5);
     }
 
     public static Pageable defaultPageable(int size) {

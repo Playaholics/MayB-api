@@ -1,6 +1,7 @@
 package kr.mayb.service;
 
 import jakarta.transaction.Transactional;
+import kr.mayb.data.model.Order;
 import kr.mayb.data.model.Product;
 import kr.mayb.data.model.ProductGenderPrice;
 import kr.mayb.data.model.ProductSchedule;
@@ -12,13 +13,13 @@ import kr.mayb.enums.GcsBucketPath;
 import kr.mayb.enums.ProductStatus;
 import kr.mayb.error.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -151,6 +152,30 @@ public class ProductService {
         ProductSchedule schedule = getSchedule(scheduleId, product);
 
         return OrderedProductItem.of(product, genderPrice, schedule);
+    }
+
+    public Map<Long, OrderedProductItem> findOrderedProductItems(Set<Long> productIds, Set<Long> priceIds, Set<Long> scheduleIds, List<Order> orders) {
+        Map<Long, Product> productMap = productRepository.findAllByIdIn(productIds)
+                .stream()
+                .collect(Collectors.toMap(Product::getId, Function.identity()));
+        Map<Long, ProductGenderPrice> genderPriceMap = productGenderPriceRepository.findAllByIdIn(priceIds)
+                .stream()
+                .collect(Collectors.toMap(ProductGenderPrice::getId, Function.identity()));
+        Map<Long, ProductSchedule> scheduleMap = productScheduleRepository.findAllByIdIn(scheduleIds)
+                .stream()
+                .collect(Collectors.toMap(ProductSchedule::getId, Function.identity()));
+
+        return orders
+                .stream()
+                .map(order -> {
+                    Product product = productMap.get(order.getProductId());
+                    ProductGenderPrice genderPrice = genderPriceMap.get(order.getProductGenderPriceId());
+                    ProductSchedule schedule = scheduleMap.get(order.getProductScheduleId());
+
+                    OrderedProductItem orderedProductItem = OrderedProductItem.of(product, genderPrice, schedule);
+                    return Pair.of(order.getId(), orderedProductItem);
+                })
+                .collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
     }
 
     private void updateProductImage(Optional<String> profileUrl, Optional<String> detailUrl, Product product) {

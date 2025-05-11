@@ -4,9 +4,13 @@ import jakarta.transaction.Transactional;
 import kr.mayb.data.model.Order;
 import kr.mayb.data.repository.OrderRepository;
 import kr.mayb.dto.OrderedProductItem;
+import kr.mayb.enums.OrderSort;
 import kr.mayb.enums.PaymentMethod;
 import kr.mayb.enums.PaymentStatus;
+import kr.mayb.util.request.PageRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -28,5 +32,10 @@ public class OrderService {
         order.setHasReviewed(false);
 
         return orderRepository.save(order);
+    }
+
+    public Page<Order> getMyOrders(long memberId, PageRequest pageRequest) {
+        Pageable pageable = pageRequest.toPageable(OrderSort.NEWEST_FIRST.toSortOption());
+        return orderRepository.findAllByMemberId(memberId, pageable);
     }
 }

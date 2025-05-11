@@ -7,10 +7,13 @@ import kr.mayb.dto.OrderRequest;
 import kr.mayb.facade.OrderFacade;
 import kr.mayb.security.DenyAll;
 import kr.mayb.security.PermitAuthenticated;
+import kr.mayb.util.request.PageRequest;
 import kr.mayb.util.response.ApiResponse;
+import kr.mayb.util.response.PageResponse;
 import kr.mayb.util.response.Responses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,6 +31,14 @@ public class OrderController {
     @PostMapping("/orders")
     public ResponseEntity<ApiResponse<OrderInfo>> makeOrder(@RequestBody OrderRequest request) {
         OrderInfo response = orderFacade.makeOrder(request);
+        return Responses.ok(response);
+    }
+
+    @Operation(summary = "내 주문 목록 조회")
+    @PermitAuthenticated
+    @GetMapping("/orders/me")
+    public ResponseEntity<ApiResponse<PageResponse<OrderInfo, Void>>> getMyOrders(PageRequest pageRequest) {
+        PageResponse<OrderInfo, Void> response = orderFacade.getMyOrders(pageRequest);
         return Responses.ok(response);
     }
 }
