@@ -209,4 +209,8 @@ public class ProductService {
         return productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
     }
+
+    public List<Product> findAll() {
+        return productRepository.findAll();
+    }
 }

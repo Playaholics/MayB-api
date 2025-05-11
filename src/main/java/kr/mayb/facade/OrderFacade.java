@@ -2,10 +2,8 @@ package kr.mayb.facade;
 
 import kr.mayb.data.model.Member;
 import kr.mayb.data.model.Order;
-import kr.mayb.dto.MemberDto;
-import kr.mayb.dto.OrderInfo;
-import kr.mayb.dto.OrderRequest;
-import kr.mayb.dto.OrderedProductItem;
+import kr.mayb.dto.*;
+import kr.mayb.enums.PaymentStatus;
 import kr.mayb.service.MemberService;
 import kr.mayb.service.OrderService;
 import kr.mayb.service.ProductService;
@@ -46,6 +44,21 @@ public class OrderFacade {
 
         List<OrderInfo> converted = convertToOrderInfos(orders.getContent());
         return PageResponse.of(new PageImpl<>(converted, orders.getPageable(), orders.getTotalElements()));
+    }
+
+    public PageResponse<OrderInfo, List<ProductSimple>> getOrders(Long productId, PaymentStatus paymentStatus, PageRequest pageRequest) {
+        Page<Order> orders = orderService.getOrders(productId, paymentStatus, pageRequest);
+
+        List<OrderInfo> converted = convertToOrderInfos(orders.getContent());
+        PageImpl<OrderInfo> orderInfoPage = new PageImpl<>(converted, orders.getPageable(), orders.getTotalElements());
+        return PageResponse.of(orderInfoPage, getProductMetaData());
+    }
+
+    private List<ProductSimple> getProductMetaData() {
+        return productService.findAll()
+                .stream()
+                .map(ProductSimple::of)
+                .toList();
     }
 
     private List<OrderInfo> convertToOrderInfos(List<Order> orders) {

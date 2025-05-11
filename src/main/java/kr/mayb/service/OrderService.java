@@ -3,6 +3,7 @@ package kr.mayb.service;
 import jakarta.transaction.Transactional;
 import kr.mayb.data.model.Order;
 import kr.mayb.data.repository.OrderRepository;
+import kr.mayb.data.repository.specification.OrderSpecification;
 import kr.mayb.dto.OrderedProductItem;
 import kr.mayb.enums.OrderSort;
 import kr.mayb.enums.PaymentMethod;
@@ -11,6 +12,7 @@ import kr.mayb.util.request.PageRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -37,5 +39,14 @@ public class OrderService {
     public Page<Order> getMyOrders(long memberId, PageRequest pageRequest) {
         Pageable pageable = pageRequest.toPageable(OrderSort.NEWEST_FIRST.toSortOption());
         return orderRepository.findAllByMemberId(memberId, pageable);
+    }
+
+    public Page<Order> getOrders(Long productId, PaymentStatus paymentStatus, PageRequest pageRequest) {
+        Pageable pageable = pageRequest.toPageable(OrderSort.NEWEST_FIRST.toSortOption());
+        Specification<Order> spec = Specification
+                .where(OrderSpecification.withProductId(productId))
+                .and(OrderSpecification.withPaymentStatus(paymentStatus));
+
+        return orderRepository.findAll(spec, pageable);
     }
 }
