@@ -20,11 +20,11 @@ public class ProductDto {
     private final String description;
 
     private final int originalPrice;
-    private final int salePrice;
+    private final int discountPrice;
 
-    private final List<TagInfo> tags;
-    private final List<GenderPrice> genderPrices;
-    private final List<DateTimeInfo> dateTimes;
+    private final List<String> tags;
+    private final List<GenderPrice> prices;
+    private final List<ScheduleInfo> schedules;
 
     private final ProductStatus status;
 
@@ -38,10 +38,10 @@ public class ProductDto {
         this.detailImageUrl = product.getDetailImageUrl();
         this.description = product.getDescription();
         this.originalPrice = product.getOriginalPrice();
-        this.salePrice = product.getSalePrice();
-        this.tags = product.getProductTags().stream().map(TagInfo::of).toList();
-        this.genderPrices = product.getProductGenders().stream().map(GenderPrice::of).toList();
-        this.dateTimes = product.getProductDateTimes().stream().map(DateTimeInfo::of).toList();
+        this.discountPrice = product.getDiscountPrice();
+        this.tags = List.of(product.getTags().split("\\|"));
+        this.prices = product.getProductGenderPrices().stream().map(GenderPrice::of).toList();
+        this.schedules = product.getProductSchedules().stream().map(ScheduleInfo::of).toList();
         this.status = product.getStatus();
 
         if (isAdmin) {

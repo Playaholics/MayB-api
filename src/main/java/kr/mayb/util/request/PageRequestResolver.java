@@ -9,7 +9,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 public class PageRequestResolver implements HandlerMethodArgumentResolver {
 
-    private static final int DEFAULT_PAGE_SIZE = 10;
+    private static final int DEFAULT_PAGE_SIZE = 5;
     private static final int DEFAULT_PAGE_NUMBER = 0;
     private static final int MAX_PAGE_SIZE = 100;
     private static final int MAX_ELEMENT_SIZE = 5000;
@@ -35,7 +35,7 @@ public class PageRequestResolver implements HandlerMethodArgumentResolver {
     private int parseAndApplyBoundaries(String parameter, int defaultValue, int upper) {
         try {
             int parsed = Integer.parseInt(parameter);
-            return parsed < 0 ? defaultValue : parsed > upper ? upper : parsed;
+            return parsed < 0 ? defaultValue : Math.min(parsed, upper);
         } catch (NumberFormatException e) {
             return defaultValue;
         }

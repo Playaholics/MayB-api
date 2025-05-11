@@ -1,6 +1,7 @@
 package kr.mayb.controller;
 
 import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.mayb.security.DenyAll;
 import kr.mayb.security.PermitAll;
 import kr.mayb.security.PermitAuthenticated;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "Security", description = "security 관련 Test API. Swagger 에 표시 안됨")
 @Hidden
 @DenyAll
 @RestController

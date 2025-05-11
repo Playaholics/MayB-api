@@ -1,14 +1,15 @@
 package kr.mayb.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import kr.mayb.data.model.ProductGender;
+import kr.mayb.data.model.ProductGenderPrice;
 
 public record GenderPrice(
+        long priceId,
         @NotBlank
         String gender,
         int price
 ) {
-    public static GenderPrice of(ProductGender gender) {
-        return new GenderPrice(gender.getGender(), gender.getPrice());
+    public static GenderPrice of(ProductGenderPrice gender) {
+        return new GenderPrice(gender.getId(), gender.getGender(), gender.getPrice());
     }
 }

@@ -17,7 +17,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -81,6 +85,12 @@ public class MemberService {
 
         Member updated = memberRepository.save(member);
         return convertToMemberDto(updated);
+    }
+
+    public Map<Long, Member> findAllByIdIn(Set<Long> memberIds) {
+        return memberRepository.findAllByIdIn(memberIds)
+                .stream()
+                .collect(Collectors.toMap(Member::getId, Function.identity()));
     }
 
     private MemberDto convertToMemberDto(Member member) {

@@ -1,30 +1,25 @@
 package kr.mayb.service;
 
-import io.micrometer.common.util.StringUtils;
 import jakarta.transaction.Transactional;
+import kr.mayb.data.model.Order;
 import kr.mayb.data.model.Product;
-import kr.mayb.data.model.ProductDateTime;
-import kr.mayb.data.model.ProductGender;
-import kr.mayb.data.model.ProductTag;
-import kr.mayb.data.repository.ProductDateTimeRepository;
-import kr.mayb.data.repository.ProductGenderRepository;
+import kr.mayb.data.model.ProductGenderPrice;
+import kr.mayb.data.model.ProductSchedule;
+import kr.mayb.data.repository.ProductGenderPriceRepository;
 import kr.mayb.data.repository.ProductRepository;
-import kr.mayb.data.repository.ProductTagRepository;
-import kr.mayb.dto.GenderPrice;
-import kr.mayb.dto.ProductDto;
-import kr.mayb.dto.ProductRegistrationRequest;
-import kr.mayb.dto.ProductUpdateRequest;
+import kr.mayb.data.repository.ProductScheduleRepository;
+import kr.mayb.dto.*;
 import kr.mayb.enums.GcsBucketPath;
 import kr.mayb.enums.ProductStatus;
 import kr.mayb.error.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -35,63 +30,52 @@ public class ProductService {
     private final ImageService imageService;
 
     private final ProductRepository productRepository;
-    private final ProductTagRepository productTagRepository;
-    private final ProductGenderRepository productGenderRepository;
-    private final ProductDateTimeRepository productDateTimeRepository;
+    private final ProductGenderPriceRepository productGenderPriceRepository;
+    private final ProductScheduleRepository productScheduleRepository;
 
     @Transactional
     public ProductDto registerProduct(ProductRegistrationRequest request, String profileUrl, String detailUrl, long creatorId) {
         Product product = new Product();
         product.setName(request.name());
         product.setOriginalPrice(request.originalPrice());
-        product.setSalePrice(request.salePrice());
+        product.setDiscountPrice(request.salePrice());
         product.setProfileImageUrl(profileUrl);
         product.setDetailImageUrl(detailUrl);
         product.setDescription(request.description());
         product.setCreatorId(creatorId);
         product.setLastModifierId(creatorId);
         product.setStatus(ProductStatus.ACTIVE);
+        product.setTags(String.join("|", request.tags()));
 
-        saveAdditionalInfo(request.tags(), request.dateTimes(), request.genderPrices(), product);
+        saveAdditionalInfo(request.schedules(), request.genderPrices(), product);
 
         Product saved = productRepository.save(product);
         return ProductDto.of(saved, true);
     }
 
-    private void saveAdditionalInfo(List<String> tags, List<LocalDateTime> dateTimes, List<GenderPrice> genderPrices, Product product) {
-        List<ProductTag> productTags = tags.stream()
-                .filter(StringUtils::isNotBlank)
-                .map(tag -> {
-                    ProductTag productTag = new ProductTag();
-                    productTag.setName(tag);
-                    productTag.setProduct(product);
-                    return productTag;
-                })
-                .collect(Collectors.toList());
-
-        List<ProductDateTime> productDateTimes = dateTimes.stream()
+    private void saveAdditionalInfo(List<LocalDateTime> schedules, List<GenderPrice> genderPrices, Product product) {
+        List<ProductSchedule> productSchedules = schedules.stream()
                 .filter(Objects::nonNull)
-                .map(dateTime -> {
-                    ProductDateTime productDateTime = new ProductDateTime();
-                    productDateTime.setDateTime(dateTime);
-                    productDateTime.setProduct(product);
-                    return productDateTime;
+                .map(time -> {
+                    ProductSchedule productSchedule = new ProductSchedule();
+                    productSchedule.setTimeSlot(time);
+                    productSchedule.setProduct(product);
+                    return productSchedule;
                 })
                 .collect(Collectors.toList());
 
-        List<ProductGender> productGenders = genderPrices.stream()
+        List<ProductGenderPrice> productGenderPrices = genderPrices.stream()
                 .map(genderPrice -> {
-                    ProductGender productGender = new ProductGender();
-                    productGender.setGender(genderPrice.gender());
-                    productGender.setPrice(genderPrice.price());
-                    productGender.setProduct(product);
-                    return productGender;
+                    ProductGenderPrice productGenderPrice = new ProductGenderPrice();
+                    productGenderPrice.setGender(genderPrice.gender());
+                    productGenderPrice.setPrice(genderPrice.price());
+                    productGenderPrice.setProduct(product);
+                    return productGenderPrice;
                 })
                 .collect(Collectors.toList());
 
-        product.setProductTags(productTags);
-        product.setProductDateTimes(productDateTimes);
-        product.setProductGenders(productGenders);
+        product.setProductSchedules(productSchedules);
+        product.setProductGenderPrices(productGenderPrices);
     }
 
     public List<ProductDto> getProducts(boolean isAdmin) {
@@ -113,8 +97,7 @@ public class ProductService {
     }
 
     public ProductDto getProduct(long productId, boolean isAdmin) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found.: " + productId));
+        Product product = getProduct(productId);
 
         if (isAdmin) {
             return ProductDto.of(product, true);
@@ -129,13 +112,13 @@ public class ProductService {
 
     @Transactional
     public ProductDto updateProduct(long productId, Optional<String> profileUrl, Optional<String> detailUrl, ProductUpdateRequest request, long modifierId) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found.: " + productId));
+        Product product = getProduct(productId);
 
         product.setName(request.name());
         product.setOriginalPrice(request.originalPrice());
-        product.setSalePrice(request.salePrice());
+        product.setDiscountPrice(request.salePrice());
         product.setDescription(request.description());
+        product.setTags(String.join("|", request.tags()));
 
         updateProductImage(profileUrl, detailUrl, product);
         clearAndUpdateAdditionalInfo(request, product);
@@ -152,8 +135,7 @@ public class ProductService {
 
     @Transactional
     public void changeStatus(long productId, boolean active, long memberId) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found.: " + productId));
+        Product product = getProduct(productId);
 
         if (active) {
             product.setStatus(ProductStatus.ACTIVE);
@@ -162,6 +144,38 @@ public class ProductService {
         }
 
         product.setLastModifierId(memberId);
+    }
+
+    public OrderedProductItem findOrderedProductItem(long productId, long priceId, long scheduleId) {
+        Product product = getProduct(productId);
+        ProductGenderPrice genderPrice = getGenderPrice(priceId, product);
+        ProductSchedule schedule = getSchedule(scheduleId, product);
+
+        return OrderedProductItem.of(product, genderPrice, schedule);
+    }
+
+    public Map<Long, OrderedProductItem> findOrderedProductItems(Set<Long> productIds, Set<Long> priceIds, Set<Long> scheduleIds, List<Order> orders) {
+        Map<Long, Product> productMap = productRepository.findAllByIdIn(productIds)
+                .stream()
+                .collect(Collectors.toMap(Product::getId, Function.identity()));
+        Map<Long, ProductGenderPrice> genderPriceMap = productGenderPriceRepository.findAllByIdIn(priceIds)
+                .stream()
+                .collect(Collectors.toMap(ProductGenderPrice::getId, Function.identity()));
+        Map<Long, ProductSchedule> scheduleMap = productScheduleRepository.findAllByIdIn(scheduleIds)
+                .stream()
+                .collect(Collectors.toMap(ProductSchedule::getId, Function.identity()));
+
+        return orders
+                .stream()
+                .map(order -> {
+                    Product product = productMap.get(order.getProductId());
+                    ProductGenderPrice genderPrice = genderPriceMap.get(order.getProductGenderPriceId());
+                    ProductSchedule schedule = scheduleMap.get(order.getProductScheduleId());
+
+                    OrderedProductItem orderedProductItem = OrderedProductItem.of(product, genderPrice, schedule);
+                    return Pair.of(order.getId(), orderedProductItem);
+                })
+                .collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
     }
 
     private void updateProductImage(Optional<String> profileUrl, Optional<String> detailUrl, Product product) {
@@ -176,9 +190,27 @@ public class ProductService {
     }
 
     private void clearAndUpdateAdditionalInfo(ProductUpdateRequest request, Product product) {
-        productTagRepository.deleteByProduct(product);
-        productGenderRepository.deleteByProduct(product);
-        productDateTimeRepository.deleteByProduct(product);
-        saveAdditionalInfo(request.tags(), request.dateTimes(), request.genderPrices(), product);
+        productGenderPriceRepository.deleteByProduct(product);
+        productScheduleRepository.deleteByProduct(product);
+        saveAdditionalInfo(request.schedules(), request.genderPrices(), product);
+    }
+
+    private ProductSchedule getSchedule(long scheduleId, Product product) {
+        return productScheduleRepository.findByIdAndProduct(scheduleId, product)
+                .orElseThrow(() -> new ResourceNotFoundException("Schedule not found: " + scheduleId));
+    }
+
+    private ProductGenderPrice getGenderPrice(long priceId, Product product) {
+        return productGenderPriceRepository.findByIdAndProduct(priceId, product)
+                .orElseThrow(() -> new ResourceNotFoundException("Price not found: " + priceId));
+    }
+
+    private Product getProduct(long productId) {
+        return productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
+    }
+
+    public List<Product> findAll() {
+        return productRepository.findAll();
     }
 }

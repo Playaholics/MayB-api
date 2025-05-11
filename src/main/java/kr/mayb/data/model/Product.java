@@ -27,7 +27,7 @@ public class Product extends BaseEntity {
     private int originalPrice;
 
     @Column
-    private int salePrice;
+    private int discountPrice;
 
     @Column
     private String profileImageUrl;
@@ -48,15 +48,14 @@ public class Product extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ProductStatus status;
 
-    @BatchSize(size = 20)
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    private List<ProductTag> productTags = new ArrayList<>();
+    @Column
+    private String tags;
 
     @BatchSize(size = 20)
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    private List<ProductGender> productGenders = new ArrayList<>();
+    private List<ProductGenderPrice> productGenderPrices = new ArrayList<>();
 
     @BatchSize(size = 20)
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    private List<ProductDateTime> productDateTimes = new ArrayList<>();
+    private List<ProductSchedule> productSchedules = new ArrayList<>();
 }
