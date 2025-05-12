@@ -31,11 +31,13 @@ public class Review extends BaseEntity {
     @Column(nullable = false)
     private int starRating;
 
-    @Column(nullable = false)
-    private long memberId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
 
-    @Column(nullable = false)
-    private long productId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
     @BatchSize(size = 10)
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL)

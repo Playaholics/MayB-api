@@ -6,6 +6,7 @@ import kr.mayb.enums.AccountStatus;
 import kr.mayb.enums.Gender;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDate;
@@ -65,4 +66,15 @@ public class Member extends BaseEntity{
     @Column
     @Enumerated(EnumType.STRING)
     private AccountStatus status;
+
+    public String getMaskedName() {
+        if (StringUtils.isBlank(this.name) || this.name.length() <= 1) {
+            return this.name;
+        }
+
+        String firstChar = this.name.substring(0, 1);
+        String masked = this.name.substring(1).replaceAll("\\.", "*");
+
+        return firstChar + masked;
+    }
 }

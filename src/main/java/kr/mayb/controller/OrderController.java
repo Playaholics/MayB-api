@@ -63,7 +63,7 @@ public class OrderController {
     @PatchMapping("orders/{orderId}/members/{memberId}/payment-status")
     public ResponseEntity<ApiResponse<OrderInfo>> updatePaymentStatus(@PathVariable long orderId,
                                                                       @PathVariable long memberId,
-                                                                      @RequestBody @Valid OrderController.PaymentStatusUpdateRequest request) {
+                                                                      @RequestBody @Valid PaymentStatusUpdateRequest request) {
         OrderInfo response = orderFacade.updatePaymentStatus(orderId, memberId, request.status());
         return Responses.ok(response);
 
