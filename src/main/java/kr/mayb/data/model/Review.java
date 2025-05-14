@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,9 +22,6 @@ public class Review extends BaseEntity {
     private long id;
 
     @Column(nullable = false)
-    private String productName;
-
-    @Column(nullable = false)
     private String content;
 
     @Min(1)
@@ -31,13 +29,21 @@ public class Review extends BaseEntity {
     @Column(nullable = false)
     private int starRating;
 
+    @Column
+    private String gender;
+
+    @Column
+    private LocalDateTime scheduledAt;
+
+    @Column
+    private long productId;
+
+    @Column
+    private long orderId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
 
     @BatchSize(size = 10)
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL)

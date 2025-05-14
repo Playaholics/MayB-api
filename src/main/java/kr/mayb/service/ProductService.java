@@ -205,7 +205,7 @@ public class ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Price not found: " + priceId));
     }
 
-    private Product getProduct(long productId) {
+    public Product getProduct(long productId) {
         return productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
     }
