@@ -8,12 +8,14 @@ import kr.mayb.data.repository.ReviewRepository;
 import kr.mayb.dto.OrderedProductItem;
 import kr.mayb.dto.ReviewRequest;
 import kr.mayb.enums.ReviewSort;
+import kr.mayb.error.ResourceNotFoundException;
 import kr.mayb.util.request.PageRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -67,6 +69,21 @@ public class ReviewService {
         Pageable pageable = pageRequest.toPageable(sort);
 
         return reviewRepository.findAllByProductId(productId, pageable);
+    }
+
+    @Transactional
+    public Review updateReview(long reviewId, String content, int starRating, long memberId) {
+        Review review = findById(reviewId)
+                .orElseThrow(() -> new ResourceNotFoundException("Review not found. : " + reviewId));
+
+        if (review.getMember().getId() != memberId) {
+            throw new AccessDeniedException("Only author can update review. : " + memberId);
+        }
+
+        review.setContent(content);
+        review.setStarRating(starRating);
+
+        return reviewRepository.save(review);
     }
 
     public Optional<Review> findById(long reviewId) {

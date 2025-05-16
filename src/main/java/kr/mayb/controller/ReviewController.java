@@ -2,6 +2,9 @@ package kr.mayb.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import kr.mayb.dto.ReviewDto;
 import kr.mayb.dto.ReviewRequest;
 import kr.mayb.error.BadRequestException;
@@ -54,5 +57,21 @@ public class ReviewController {
                                                                                  PageRequest pageRequest) {
         PageResponse<ReviewDto, Void> response = reviewFacade.getReviews(productId, pageRequest);
         return Responses.ok(response);
+    }
+
+    @Operation(summary = "상품 리뷰 수정")
+    @PermitAuthenticated
+    @PutMapping("/reviews/{reviewId}")
+    public ResponseEntity<ApiResponse<ReviewDto>> updateReview(@PathVariable long reviewId, @RequestBody @Valid ReviewUpdateRequest request) {
+        ReviewDto response = reviewFacade.updateReview(reviewId, request.content(), request.starRating());
+        return Responses.ok(response);
+    }
+
+    private record ReviewUpdateRequest(
+            @NotBlank
+            String content,
+            @NotNull
+            int starRating
+    ) {
     }
 }

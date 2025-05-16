@@ -1,6 +1,7 @@
 package kr.mayb.facade;
 
 import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.NotBlank;
 import kr.mayb.data.model.Member;
 import kr.mayb.data.model.Product;
 import kr.mayb.data.model.Review;
@@ -126,5 +127,12 @@ public class ReviewFacade {
                     return ReviewDto.of(review, currentMemberId);
                 })
                 .toList();
+    }
+
+    public ReviewDto updateReview(long reviewId, @NotBlank String content, int starRating) {
+        MemberDto member = ContextUtils.loadMember();
+
+        Review updated = reviewService.updateReview(reviewId, content, starRating, member.getMemberId());
+        return ReviewDto.of(updated, member.getMemberId());
     }
 }
