@@ -8,6 +8,7 @@ public enum GcsBucketPath {
     PROFILE("profile/"),
     PRODUCT_PROFILE("product_profile/"),
     PRODUCT_DETAIL("product_detail/"),
+    REVIEW("review/")
     ;
 
     private final String value;
@@ -17,6 +18,7 @@ public enum GcsBucketPath {
             case PROFILE -> PROFILE.value;
             case PRODUCT_PROFILE -> PRODUCT_PROFILE.value;
             case PRODUCT_DETAIL -> PRODUCT_DETAIL.value;
+            case REVIEW -> REVIEW.value;
             default -> throw new BadRequestException("Invalid GcsPathType" + pathType);
         };
     }

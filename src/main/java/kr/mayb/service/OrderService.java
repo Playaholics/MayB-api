@@ -16,6 +16,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -53,11 +55,23 @@ public class OrderService {
 
     @Transactional
     public Order updatePaymentStatus(long orderId, long memberId, PaymentStatus paymentStatus) {
-        Order order = orderRepository.findByIdAndMemberId(orderId, memberId)
+        Order order = find(orderId, memberId)
                 .orElseThrow(() -> new ResourceNotFoundException("There is no Order with orderId and memberId." + orderId + ", " + memberId));
 
         order.setPaymentStatus(paymentStatus);
 
         return orderRepository.save(order);
+    }
+
+    @Transactional
+    public void updateReviewStatus(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("There is no Order with orderId." + orderId));
+
+        order.setHasReviewed(true);
+    }
+
+    public Optional<Order> find(long orderId, long memberId) {
+        return orderRepository.findByIdAndMemberId(orderId, memberId);
     }
 }
