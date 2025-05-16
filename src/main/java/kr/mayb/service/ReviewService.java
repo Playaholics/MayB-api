@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import kr.mayb.data.model.Member;
 import kr.mayb.data.model.Review;
 import kr.mayb.data.model.ReviewImage;
+import kr.mayb.data.repository.ReviewImageRepository;
 import kr.mayb.data.repository.ReviewRepository;
 import kr.mayb.dto.OrderedProductItem;
 import kr.mayb.dto.ReviewRequest;
@@ -27,6 +28,7 @@ import java.util.Optional;
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
+    private final ReviewImageRepository reviewImageRepository;
 
     @Transactional
     public Review save(ReviewRequest request, long productId, Pair<Long, OrderedProductItem> orderItem, List<String> imageUrls, Member author) {
@@ -88,5 +90,13 @@ public class ReviewService {
 
     public Optional<Review> findById(long reviewId) {
         return reviewRepository.findById(reviewId);
+    }
+
+    public ReviewImage addImage(Review review, String imageUrl) {
+        ReviewImage reviewImage = new ReviewImage();
+        reviewImage.setReview(review);
+        reviewImage.setImageUrl(imageUrl);
+
+        return reviewImageRepository.save(reviewImage);
     }
 }

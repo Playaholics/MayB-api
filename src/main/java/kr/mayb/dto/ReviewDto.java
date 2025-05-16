@@ -2,7 +2,6 @@ package kr.mayb.dto;
 
 import kr.mayb.data.model.Member;
 import kr.mayb.data.model.Review;
-import kr.mayb.data.model.ReviewImage;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -16,11 +15,11 @@ public record ReviewDto(
         String gender,
         LocalDateTime scheduledAt,
         long memberId,
-        List<String> imageUrls,
+        List<ImageDto> images,
         OffsetDateTime createdAt,
         boolean isMyReview
 ) {
-    private ReviewDto(Review review, List<String> imageUrls, Member author, boolean isMyReview) {
+    private ReviewDto(Review review, List<ImageDto> images, Member author, boolean isMyReview) {
         this(
                 review.getId(),
                 review.getContent(),
@@ -29,7 +28,7 @@ public record ReviewDto(
                 review.getGender(),
                 review.getScheduledAt(),
                 author.getId(),
-                imageUrls,
+                images,
                 review.getCreatedAt(),
                 isMyReview
         );
@@ -37,15 +36,15 @@ public record ReviewDto(
 
     public static ReviewDto of(Review review) {
         Member author = review.getMember();
-        List<String> imageUrls = review.getReviewImages().stream().map(ReviewImage::getImageUrl).toList();
-        return new ReviewDto(review, imageUrls, author, false);
+        List<ImageDto> images = review.getReviewImages().stream().map(ImageDto::of).toList();
+        return new ReviewDto(review, images, author, false);
     }
 
     public static ReviewDto of(Review review, long currentMemberId) {
         Member author = review.getMember();
-        List<String> imageUrls = review.getReviewImages().stream().map(ReviewImage::getImageUrl).toList();
+        List<ImageDto> images = review.getReviewImages().stream().map(ImageDto::of).toList();
         boolean isMyReview = isMyReview(author.getId(), currentMemberId);
-        return new ReviewDto(review, imageUrls, author, isMyReview);
+        return new ReviewDto(review, images, author, isMyReview);
     }
 
     private static boolean isMyReview(long authorId, long currentMemberId) {

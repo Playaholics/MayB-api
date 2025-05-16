@@ -5,10 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import kr.mayb.data.model.Member;
 import kr.mayb.data.model.Product;
 import kr.mayb.data.model.Review;
-import kr.mayb.dto.MemberDto;
-import kr.mayb.dto.OrderedProductItem;
-import kr.mayb.dto.ReviewDto;
-import kr.mayb.dto.ReviewRequest;
+import kr.mayb.data.model.ReviewImage;
+import kr.mayb.dto.*;
 import kr.mayb.enums.GcsBucketPath;
 import kr.mayb.enums.PaymentStatus;
 import kr.mayb.error.BadRequestException;
@@ -23,6 +21,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -82,6 +81,28 @@ public class ReviewFacade {
         return PageResponse.of(new PageImpl<>(convertToReviewDto(reviews, currentMemberId), reviews.getPageable(), reviews.getTotalElements()));
     }
 
+    public ReviewDto updateReview(long reviewId, @NotBlank String content, int starRating) {
+        MemberDto member = ContextUtils.loadMember();
+
+        Review updated = reviewService.updateReview(reviewId, content, starRating, member.getMemberId());
+        return ReviewDto.of(updated, member.getMemberId());
+    }
+
+    public ImageDto addReviewImage(long reviewId, MultipartFile image) {
+        MemberDto member = ContextUtils.loadMember();
+        Review review = reviewService.findById(reviewId)
+                .orElseThrow(() -> new ResourceNotFoundException("Review not found. : " + reviewId));
+
+        if (review.getMember().getId() != member.getMemberId()) {
+            throw new AccessDeniedException("Only author can update review. : " + member.getMemberId());
+        }
+
+        String imageUrl = imageService.upload(image, GcsBucketPath.REVIEW);
+        ReviewImage saved = reviewService.addImage(review, imageUrl);
+
+        return ImageDto.of(saved);
+    }
+
     private Pair<Long, OrderedProductItem> getParticipatedProduct(Member author, Product product) {
         return orderService.findByProductIdAndMemberId(author.getId(), product.getId())
                 .filter(orderOpt -> orderOpt.getPaymentStatus() == PaymentStatus.COMPLETED)
@@ -127,12 +148,5 @@ public class ReviewFacade {
                     return ReviewDto.of(review, currentMemberId);
                 })
                 .toList();
-    }
-
-    public ReviewDto updateReview(long reviewId, @NotBlank String content, int starRating) {
-        MemberDto member = ContextUtils.loadMember();
-
-        Review updated = reviewService.updateReview(reviewId, content, starRating, member.getMemberId());
-        return ReviewDto.of(updated, member.getMemberId());
     }
 }

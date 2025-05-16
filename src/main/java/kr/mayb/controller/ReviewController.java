@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import kr.mayb.dto.ImageDto;
 import kr.mayb.dto.ReviewDto;
 import kr.mayb.dto.ReviewRequest;
 import kr.mayb.error.BadRequestException;
@@ -64,6 +65,14 @@ public class ReviewController {
     @PutMapping("/reviews/{reviewId}")
     public ResponseEntity<ApiResponse<ReviewDto>> updateReview(@PathVariable long reviewId, @RequestBody @Valid ReviewUpdateRequest request) {
         ReviewDto response = reviewFacade.updateReview(reviewId, request.content(), request.starRating());
+        return Responses.ok(response);
+    }
+
+    @Operation(summary = "상품 리뷰 이미지 추가 (리뷰 수정 시)")
+    @PermitAuthenticated
+    @PostMapping("/reviews/{reviewId}/images")
+    public ResponseEntity<ApiResponse<ImageDto>> addReviewImage(@PathVariable long reviewId, @RequestParam("image") MultipartFile image) {
+        ImageDto response = reviewFacade.addReviewImage(reviewId, image);
         return Responses.ok(response);
     }
 
