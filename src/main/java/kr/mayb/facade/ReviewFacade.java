@@ -93,14 +93,33 @@ public class ReviewFacade {
         Review review = reviewService.findById(reviewId)
                 .orElseThrow(() -> new ResourceNotFoundException("Review not found. : " + reviewId));
 
-        if (review.getMember().getId() != member.getMemberId()) {
-            throw new AccessDeniedException("Only author can update review. : " + member.getMemberId());
-        }
+        checkAuthor(review.getMember().getId(), member.getMemberId());
 
         String imageUrl = imageService.upload(image, GcsBucketPath.REVIEW);
         ReviewImage saved = reviewService.addImage(review, imageUrl);
 
         return ImageDto.of(saved);
+    }
+
+    @Transactional
+    public void removeReviewImage(long reviewId, long imageId) {
+        MemberDto member = ContextUtils.loadMember();
+        Review review = reviewService.findById(reviewId)
+                .orElseThrow(() -> new ResourceNotFoundException("Review not found. : " + reviewId));
+
+        checkAuthor(review.getMember().getId(), member.getMemberId());
+
+        ReviewImage image = reviewService.findImageById(imageId)
+                .orElseThrow(() -> new ResourceNotFoundException("Review image not found. : " + imageId));
+
+        imageService.delete(image.getImageUrl(), GcsBucketPath.REVIEW);
+        reviewService.removeImage(imageId);
+    }
+
+    private void checkAuthor(long authorId, long memberId) {
+        if (authorId != memberId) {
+            throw new AccessDeniedException("Only author can update review. : " + memberId);
+        }
     }
 
     private Pair<Long, OrderedProductItem> getParticipatedProduct(Member author, Product product) {

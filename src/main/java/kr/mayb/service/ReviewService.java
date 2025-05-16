@@ -92,11 +92,21 @@ public class ReviewService {
         return reviewRepository.findById(reviewId);
     }
 
+    @Transactional
     public ReviewImage addImage(Review review, String imageUrl) {
         ReviewImage reviewImage = new ReviewImage();
         reviewImage.setReview(review);
         reviewImage.setImageUrl(imageUrl);
 
         return reviewImageRepository.save(reviewImage);
+    }
+
+    @Transactional
+    public void removeImage(long imageId) {
+        reviewImageRepository.deleteById(imageId);
+    }
+
+    public Optional<ReviewImage> findImageById(long imageId) {
+        return reviewImageRepository.findById(imageId);
     }
 }

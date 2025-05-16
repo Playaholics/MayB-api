@@ -44,8 +44,8 @@ public class ImageService {
                 .toString();
     }
 
-    public void delete(String profileUrl, GcsBucketPath pathType) {
-        String uuidName = profileUrl.substring(profileUrl.lastIndexOf("/") + 1);
+    public void delete(String imageUrl, GcsBucketPath pathType) {
+        String uuidName = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
         String fullBlobName = GcsBucketPath.getPath(pathType) + uuidName;
 
         gcsService.delete(fullBlobName);

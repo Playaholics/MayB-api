@@ -76,6 +76,14 @@ public class ReviewController {
         return Responses.ok(response);
     }
 
+    @Operation(summary = "상품 리뷰 이미지 삭제 (리뷰 수정 시)")
+    @PermitAuthenticated
+    @DeleteMapping("/reviews/{reviewId}/images/{imageId}")
+    public ResponseEntity<Void> removeReviewImage(@PathVariable long reviewId, @PathVariable long imageId) {
+        reviewFacade.removeReviewImage(reviewId, imageId);
+        return Responses.noContent();
+    }
+
     private record ReviewUpdateRequest(
             @NotBlank
             String content,
