@@ -55,7 +55,7 @@ public class OrderService {
 
     @Transactional
     public Order updatePaymentStatus(long orderId, long memberId, PaymentStatus paymentStatus) {
-        Order order = orderRepository.findByIdAndMemberId(orderId, memberId)
+        Order order = find(orderId, memberId)
                 .orElseThrow(() -> new ResourceNotFoundException("There is no Order with orderId and memberId." + orderId + ", " + memberId));
 
         order.setPaymentStatus(paymentStatus);
@@ -71,7 +71,7 @@ public class OrderService {
         order.setHasReviewed(true);
     }
 
-    public Optional<Order> findByProductIdAndMemberId(long productId, long memberId) {
-        return orderRepository.findByProductIdAndMemberId(productId, memberId);
+    public Optional<Order> find(long orderId, long memberId) {
+        return orderRepository.findByIdAndMemberId(orderId, memberId);
     }
 }

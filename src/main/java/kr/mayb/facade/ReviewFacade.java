@@ -3,7 +3,6 @@ package kr.mayb.facade;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotBlank;
 import kr.mayb.data.model.Member;
-import kr.mayb.data.model.Product;
 import kr.mayb.data.model.Review;
 import kr.mayb.data.model.ReviewImage;
 import kr.mayb.dto.*;
@@ -50,17 +49,16 @@ public class ReviewFacade {
                 .orElseThrow(() -> new BadRequestException("Only signed-in members can write reviews."));
 
         Member author = memberService.getMember(member.getMemberId());
-        Product product = productService.getProduct(request.productId());
-        Pair<Long, OrderedProductItem> orderItem = getParticipatedProduct(author, product);
+        Pair<Long, OrderedProductItem> orderItem = getOrderedProduct(request.orderId(), request.productId(), author);
 
         if (images.isEmpty()) {
-            Review saved = reviewService.save(request, product.getId(), orderItem, List.of(), author);
+            Review saved = reviewService.save(request, orderItem, List.of(), author);
             orderService.updateReviewStatus(orderItem.getLeft());
             return ReviewDto.of(saved, author.getId());
         }
 
         List<String> imageUrls = uploadImages(images);
-        Review saved = reviewService.save(request, product.getId(), orderItem, imageUrls, author);
+        Review saved = reviewService.save(request, orderItem, imageUrls, author);
         orderService.updateReviewStatus(orderItem.getLeft());
         return ReviewDto.of(saved, author.getId());
     }
@@ -83,8 +81,12 @@ public class ReviewFacade {
 
     public ReviewDto updateReview(long reviewId, @NotBlank String content, int starRating) {
         MemberDto member = ContextUtils.loadMember();
+        Review review = reviewService.findById(reviewId)
+                .orElseThrow(() -> new ResourceNotFoundException("Review not found. : " + reviewId));
 
-        Review updated = reviewService.updateReview(reviewId, content, starRating, member.getMemberId());
+        checkAuthor(review.getMember().getId(), member.getMemberId());
+
+        Review updated = reviewService.update(review, content, starRating);
         return ReviewDto.of(updated, member.getMemberId());
     }
 
@@ -116,17 +118,28 @@ public class ReviewFacade {
         reviewService.removeImage(imageId);
     }
 
+    public void removeReview(long reviewId) {
+        MemberDto member = ContextUtils.loadMember();
+        Review review = reviewService.findById(reviewId)
+                .orElseThrow(() -> new ResourceNotFoundException("Review not found. : " + reviewId));
+
+        checkAuthor(review.getMember().getId(), member.getMemberId());
+
+        reviewService.remove(review.getId());
+    }
+
     private void checkAuthor(long authorId, long memberId) {
         if (authorId != memberId) {
             throw new AccessDeniedException("Only author can update review. : " + memberId);
         }
     }
 
-    private Pair<Long, OrderedProductItem> getParticipatedProduct(Member author, Product product) {
-        return orderService.findByProductIdAndMemberId(author.getId(), product.getId())
+    private Pair<Long, OrderedProductItem> getOrderedProduct(long orderId, long productId, Member author) {
+        return orderService.find(orderId, author.getId())
+                .filter(order -> order.getProductId() == productId)
                 .filter(orderOpt -> orderOpt.getPaymentStatus() == PaymentStatus.COMPLETED)
                 .map(orderOpt -> {
-                    OrderedProductItem productItem = productService.findOrderedProductItem(product.getId(), orderOpt.getId(), orderOpt.getProductScheduleId());
+                    OrderedProductItem productItem = productService.findOrderedProductItem(productId, orderOpt.getId(), orderOpt.getProductScheduleId());
                     return Pair.of(orderOpt.getId(), productItem);
                 })
                 .orElseThrow(() -> new BadRequestException("Only members who have purchased the product can write reviews."));

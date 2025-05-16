@@ -34,7 +34,7 @@ public class ReviewController {
     @PermitAuthenticated
     @PostMapping("/reviews")
     public ResponseEntity<ApiResponse<ReviewDto>> writeReview(@RequestPart("review") ReviewRequest request,
-                                                              @RequestPart("images") List<MultipartFile> images) {
+                                                              @RequestPart(value = "images", required = false) List<MultipartFile> images) {
         if (images.size() > 5) {
             throw new BadRequestException("Review images must be less than 5");
         }
@@ -81,6 +81,14 @@ public class ReviewController {
     @DeleteMapping("/reviews/{reviewId}/images/{imageId}")
     public ResponseEntity<Void> removeReviewImage(@PathVariable long reviewId, @PathVariable long imageId) {
         reviewFacade.removeReviewImage(reviewId, imageId);
+        return Responses.noContent();
+    }
+
+    @Operation(summary = "상품 리뷰 삭제")
+    @PermitAuthenticated
+    @DeleteMapping("/reviews/{reviewId}")
+    public ResponseEntity<Void> removeReview(@PathVariable long reviewId) {
+        reviewFacade.removeReview(reviewId);
         return Responses.noContent();
     }
 

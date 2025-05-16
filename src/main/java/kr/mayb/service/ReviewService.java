@@ -9,14 +9,12 @@ import kr.mayb.data.repository.ReviewRepository;
 import kr.mayb.dto.OrderedProductItem;
 import kr.mayb.dto.ReviewRequest;
 import kr.mayb.enums.ReviewSort;
-import kr.mayb.error.ResourceNotFoundException;
 import kr.mayb.util.request.PageRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -31,9 +29,10 @@ public class ReviewService {
     private final ReviewImageRepository reviewImageRepository;
 
     @Transactional
-    public Review save(ReviewRequest request, long productId, Pair<Long, OrderedProductItem> orderItem, List<String> imageUrls, Member author) {
+    public Review save(ReviewRequest request, Pair<Long, OrderedProductItem> orderItem, List<String> imageUrls, Member author) {
         Long orderId = orderItem.getLeft();
         OrderedProductItem orderedProduct = orderItem.getRight();
+        long productId = orderedProduct.product().getId();
         String gender = orderedProduct.genderPrice().getGender();
         LocalDateTime scheduledAt = orderedProduct.schedule().getTimeSlot();
 
@@ -74,14 +73,7 @@ public class ReviewService {
     }
 
     @Transactional
-    public Review updateReview(long reviewId, String content, int starRating, long memberId) {
-        Review review = findById(reviewId)
-                .orElseThrow(() -> new ResourceNotFoundException("Review not found. : " + reviewId));
-
-        if (review.getMember().getId() != memberId) {
-            throw new AccessDeniedException("Only author can update review. : " + memberId);
-        }
-
+    public Review update(Review review, String content, int starRating) {
         review.setContent(content);
         review.setStarRating(starRating);
 
@@ -104,6 +96,11 @@ public class ReviewService {
     @Transactional
     public void removeImage(long imageId) {
         reviewImageRepository.deleteById(imageId);
+    }
+
+    @Transactional
+    public void remove(long reviewId) {
+        reviewRepository.deleteById(reviewId);
     }
 
     public Optional<ReviewImage> findImageById(long imageId) {
