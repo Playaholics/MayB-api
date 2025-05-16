@@ -12,6 +12,7 @@ import kr.mayb.enums.GcsBucketPath;
 import kr.mayb.enums.PaymentStatus;
 import kr.mayb.error.BadRequestException;
 import kr.mayb.error.ExternalApiException;
+import kr.mayb.error.ResourceNotFoundException;
 import kr.mayb.service.*;
 import kr.mayb.util.ContextUtils;
 import kr.mayb.util.request.PageRequest;
@@ -64,14 +65,11 @@ public class ReviewFacade {
         return ReviewDto.of(saved, author.getId());
     }
 
-    private Pair<Long, OrderedProductItem> getParticipatedProduct(Member author, Product product) {
-        return orderService.findByProductIdAndMemberId(author.getId(), product.getId())
-                .filter(orderOpt -> orderOpt.getPaymentStatus() == PaymentStatus.COMPLETED)
-                .map(orderOpt -> {
-                    OrderedProductItem productItem = productService.findOrderedProductItem(product.getId(), orderOpt.getId(), orderOpt.getProductScheduleId());
-                    return Pair.of(orderOpt.getId(), productItem);
-                })
-                .orElseThrow(() -> new BadRequestException("Only members who have purchased the product can write reviews."));
+    public ReviewDto getReview(long reviewId) {
+        Review review = reviewService.findById(reviewId)
+                .orElseThrow(() -> new ResourceNotFoundException("Review not found. : " + reviewId));
+
+        return ReviewDto.of(review);
     }
 
     public PageResponse<ReviewDto, Void> getReviews(long productId, PageRequest pageRequest) {
@@ -81,6 +79,16 @@ public class ReviewFacade {
 
         Page<Review> reviews = reviewService.findAllByProductId(productId, pageRequest);
         return PageResponse.of(new PageImpl<>(convertToReviewDto(reviews, currentMemberId), reviews.getPageable(), reviews.getTotalElements()));
+    }
+
+    private Pair<Long, OrderedProductItem> getParticipatedProduct(Member author, Product product) {
+        return orderService.findByProductIdAndMemberId(author.getId(), product.getId())
+                .filter(orderOpt -> orderOpt.getPaymentStatus() == PaymentStatus.COMPLETED)
+                .map(orderOpt -> {
+                    OrderedProductItem productItem = productService.findOrderedProductItem(product.getId(), orderOpt.getId(), orderOpt.getProductScheduleId());
+                    return Pair.of(orderOpt.getId(), productItem);
+                })
+                .orElseThrow(() -> new BadRequestException("Only members who have purchased the product can write reviews."));
     }
 
     private List<String> uploadImages(List<MultipartFile> images) {

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -66,5 +67,9 @@ public class ReviewService {
         Pageable pageable = pageRequest.toPageable(sort);
 
         return reviewRepository.findAllByProductId(productId, pageable);
+    }
+
+    public Optional<Review> findById(long reviewId) {
+        return reviewRepository.findById(reviewId);
     }
 }

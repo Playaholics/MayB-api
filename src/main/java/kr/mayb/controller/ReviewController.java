@@ -39,6 +39,14 @@ public class ReviewController {
         return Responses.ok(response);
     }
 
+    @Operation(summary = "상품 리뷰 상세 조회")
+    @PermitAll
+    @GetMapping("/reviews/{reviewId}")
+    public ResponseEntity<ApiResponse<ReviewDto>> getReview(@PathVariable long reviewId) {
+        ReviewDto response = reviewFacade.getReview(reviewId);
+        return Responses.ok(response);
+    }
+
     @Operation(summary = "상품 리뷰 조회")
     @PermitAll
     @GetMapping("/reviews")
