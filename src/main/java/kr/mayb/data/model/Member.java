@@ -73,8 +73,6 @@ public class Member extends BaseEntity{
         }
 
         String firstChar = this.name.substring(0, 1);
-        String masked = this.name.substring(1).replaceAll("\\.", "*");
-
-        return firstChar + masked;
+        return firstChar + "****";
     }
 }

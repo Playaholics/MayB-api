@@ -15,9 +15,6 @@ public class UserQuestion extends BaseEntity {
     private long id;
 
     @Column(nullable = false)
-    private long productId;
-
-    @Column(nullable = false)
     private String question;
 
     @Column
@@ -26,7 +23,9 @@ public class UserQuestion extends BaseEntity {
     @Column(nullable = false)
     private boolean isSecret;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
-    private Member member;
+    @Column(nullable = false)
+    private long productId;
+
+    @Column(nullable = false)
+    private long memberId;
 }
