@@ -1,6 +1,5 @@
 package kr.mayb.service;
 
-import jakarta.transaction.Transactional;
 import kr.mayb.data.model.Authority;
 import kr.mayb.data.model.Member;
 import kr.mayb.data.repository.AuthorityRepository;
@@ -15,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.Map;

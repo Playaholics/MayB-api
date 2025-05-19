@@ -1,6 +1,5 @@
 package kr.mayb.service;
 
-import jakarta.transaction.Transactional;
 import kr.mayb.data.model.Order;
 import kr.mayb.data.model.Product;
 import kr.mayb.data.model.ProductGenderPrice;
@@ -16,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
