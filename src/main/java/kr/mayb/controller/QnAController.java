@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import kr.mayb.dto.QnADto;
 import kr.mayb.facade.QnAFacade;
 import kr.mayb.security.DenyAll;
+import kr.mayb.security.PermitAdmin;
 import kr.mayb.security.PermitAuthenticated;
 import kr.mayb.util.response.ApiResponse;
 import kr.mayb.util.response.Responses;
@@ -27,16 +28,31 @@ public class QnAController {
     @Operation(summary = "상품 QnA 등록")
     @PermitAuthenticated
     @PostMapping("/questions")
-    public ResponseEntity<ApiResponse<QnADto>> registerQuestion(@RequestBody @Valid QnARequest qnARequest) {
-        QnADto response = qnAFacade.registerQuestion(qnARequest.productId(), qnARequest.question(), qnARequest.isSecret());
+    public ResponseEntity<ApiResponse<QnADto>> registerQuestion(@RequestBody @Valid QuestionRequest request) {
+        QnADto response = qnAFacade.registerQuestion(request.productId(), request.question(), request.isSecret());
         return Responses.ok(response);
     }
 
-    private record QnARequest(
+    @Operation(summary = "상품 QnA 답변 등록")
+    @PermitAdmin
+    @PostMapping("/questions/answers")
+    public ResponseEntity<ApiResponse<QnADto>> registerAnswer(@RequestBody @Valid AnswerRequest request) {
+        QnADto response = qnAFacade.registerAnswer(request.questionId(), request.answer());
+        return Responses.ok(response);
+    }
+
+    private record QuestionRequest(
             long productId,
             @NotBlank
             String question,
             boolean isSecret
+    ) {
+    }
+
+    private record AnswerRequest(
+            long questionId,
+            @NotBlank
+            String answer
     ) {
     }
 }

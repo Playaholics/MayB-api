@@ -27,6 +27,14 @@ public class QnAFacade {
         Product product = productService.getProduct(productId);
 
         UserQuestion saved = qnAService.registerQuestion(product.getId(), question, isSecret, author);
-        return QnADto.of(saved, author.getId());
+        return QnADto.of(saved, author);
+    }
+
+    public QnADto registerAnswer(long questionId, String answer) {
+        MemberDto admin = ContextUtils.loadMember();
+
+        Member member = memberService.getMember(admin.getMemberId());
+        UserQuestion answered = qnAService.registerAnswer(questionId, answer);
+        return QnADto.of(answered, member);
     }
 }
