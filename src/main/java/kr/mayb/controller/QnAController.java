@@ -55,12 +55,28 @@ public class QnAController {
         return Responses.ok(response);
     }
 
-    @Operation
+    @Operation(summary = "상품 질문 수정")
     @PermitAuthenticated
-    @PutMapping("/questions/{questionId}")
+    @PatchMapping("/questions/{questionId}")
     public ResponseEntity<ApiResponse<QnADto>> updateQuestion(@PathVariable long questionId, @RequestBody @Valid UpdateRequest request) {
         QnADto response = qnAFacade.updateQuestion(questionId, request.content());
         return Responses.ok(response);
+    }
+
+    @Operation(summary = "상품 답변 수정")
+    @PermitAdmin
+    @PatchMapping("/questions/{questionId}/answers")
+    public ResponseEntity<ApiResponse<QnADto>> updateAnswer(@PathVariable long questionId, @RequestBody @Valid UpdateRequest request) {
+        QnADto response = qnAFacade.updateAnswer(questionId, request.content());
+        return Responses.ok(response);
+    }
+
+    @Operation(summary = "상품 질문 삭제")
+    @PermitAuthenticated
+    @DeleteMapping("/questions/{questionId}")
+    public ResponseEntity<Void> removeQuestion(@PathVariable long questionId) {
+        qnAFacade.removeQuestion(questionId);
+        return Responses.noContent();
     }
 
     private record QuestionRequest(

@@ -47,6 +47,7 @@ public class QnAService {
         return userQuestionRepository.findAll(specQuery, pageable);
     }
 
+    @Transactional
     public UserQuestion updateQuestion(long questionId, String content, long memberId) {
         UserQuestion userQuestion = userQuestionRepository.findById(questionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Question not found : " + questionId));
@@ -57,5 +58,26 @@ public class QnAService {
 
         userQuestion.setQuestion(content);
         return userQuestionRepository.save(userQuestion);
+    }
+
+    @Transactional
+    public UserQuestion updateAnswer(long questionId, String content) {
+        UserQuestion userQuestion = userQuestionRepository.findById(questionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Question not found : " + questionId));
+
+        userQuestion.setAnswer(content);
+        return userQuestionRepository.save(userQuestion);
+    }
+
+    @Transactional
+    public void removeQuestion(long questionId, long memberId) {
+        UserQuestion userQuestion = userQuestionRepository.findById(questionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Question not found : " + questionId));
+
+        if (userQuestion.getMemberId() != memberId) {
+            throw new AccessDeniedException("Only author can delete the question.");
+        }
+
+        userQuestionRepository.delete(userQuestion);
     }
 }
