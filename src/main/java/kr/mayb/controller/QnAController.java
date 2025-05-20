@@ -55,6 +55,14 @@ public class QnAController {
         return Responses.ok(response);
     }
 
+    @Operation
+    @PermitAuthenticated
+    @PutMapping("/questions/{questionId}")
+    public ResponseEntity<ApiResponse<QnADto>> updateQuestion(@PathVariable long questionId, @RequestBody @Valid UpdateRequest request) {
+        QnADto response = qnAFacade.updateQuestion(questionId, request.content());
+        return Responses.ok(response);
+    }
+
     private record QuestionRequest(
             long productId,
             @NotBlank
@@ -67,6 +75,11 @@ public class QnAController {
             long questionId,
             @NotBlank
             String answer
+    ) {
+    }
+
+    private record UpdateRequest(
+            String content
     ) {
     }
 }

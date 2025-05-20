@@ -86,6 +86,14 @@ public class QnAFacade {
         }
     }
 
+    public QnADto updateQuestion(long questionId, String content) {
+        MemberDto member = ContextUtils.loadMember();
+        UserQuestion updated = qnAService.updateQuestion(questionId, content, member.getMemberId());
+        Member author = memberService.getMember(updated.getMemberId());
+
+        return QnADto.of(updated, author, author);
+    }
+
     private List<QnASimple> convertToQnASimple(List<UserQuestion> userQuestions) {
         Set<Long> memberIds = userQuestions
                 .stream()

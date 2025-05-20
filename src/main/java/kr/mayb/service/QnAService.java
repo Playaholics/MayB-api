@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,5 +45,17 @@ public class QnAService {
         Specification<UserQuestion> specQuery = query.toSpecQuery();
 
         return userQuestionRepository.findAll(specQuery, pageable);
+    }
+
+    public UserQuestion updateQuestion(long questionId, String content, long memberId) {
+        UserQuestion userQuestion = userQuestionRepository.findById(questionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Question not found : " + questionId));
+
+        if (userQuestion.getMemberId() != memberId) {
+            throw new AccessDeniedException("Only author can update the question.");
+        }
+
+        userQuestion.setQuestion(content);
+        return userQuestionRepository.save(userQuestion);
     }
 }
