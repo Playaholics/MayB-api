@@ -1,0 +1,178 @@
+on:
+  issue_comment:
+    types: [ created ]
+
+name: "Deploy to Dev Cloud Run"
+
+env:
+  PROJECT_ID: mayb-api-458206
+  GAR_LOCATION: asia-northeast3
+  REPOSITORY: mayb-repo
+  IMAGE_NAME: mayb-api
+  REGION: asia-northeast1
+  DEV_SERVICE_NAME: mayb-api-dev
+
+jobs:
+  deploy-dev:
+    runs-on: ubuntu-latest
+    # Only run on PR comments that contain /dev-release
+    if: |
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '/dev-release')
+
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+      pull-requests: 'write'
+
+    steps:
+      - name: 'Get PR details'
+        id: pr
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            core.setOutput('ref', pr.head.ref);
+            core.setOutput('sha', pr.head.sha);
+            core.setOutput('title', pr.title);
+            core.setOutput('html_url', pr.html_url);
+
+      - uses: 'actions/checkout@v4'
+        with:
+          ref: ${{ steps.pr.outputs.sha }}
+
+      - uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: ${{ secrets.GCP_DEPLOY_SA_KEY }}
+
+      - uses: 'google-github-actions/setup-gcloud@v2'
+        with:
+          project_id: '${{ env.PROJECT_ID }}'
+
+      - name: 'Set variables'
+        run: |-
+          echo "IMAGE=${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ steps.pr.outputs.sha }}" >> $GITHUB_ENV
+
+      - uses: 'actions/setup-java@v3'
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/gradle-build-action@v2
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+      - name: Execute Gradle build
+        run: ./gradlew build
+
+      - name: 'Docker auth'
+        run: |-
+          gcloud auth configure-docker ${{ env.GAR_LOCATION }}-docker.pkg.dev
+
+      - name: Build and Push Container
+        run: |-
+          docker build --file ./Dockerfile -t "${{ env.IMAGE }}" .
+          docker push "${{ env.IMAGE }}"
+
+      - name: Create dev manifest
+        run: |-
+          export IMAGE="${{ env.IMAGE }}"
+          export SERVICE="${{ env.DEV_SERVICE_NAME }}"
+          export DB_URL="${{ secrets.DEV_DB_URL }}"
+          export DB_USERNAME="${{ secrets.DEV_DB_USERNAME }}"
+          export DB_PASSWORD="${{ secrets.DEV_DB_PASSWORD }}"
+          export ENCRYPTION_SECRET_KEY="${{ secrets.DEV_ENCRYPTION_SECRET_KEY }}"
+          export JWT_SECRET_ACCESS="${{ secrets.DEV_JWT_SECRET_ACCESS }}"
+          export JWT_SECRET_REFRESH="${{ secrets.DEV_JWT_SECRET_REFRESH }}"
+          envsubst < ./deploy/run/dev.template.yaml > dev.yaml
+
+      - name: Deploy to Cloud Run
+        id: deploy
+        uses: google-github-actions/deploy-cloudrun@v1
+        with:
+          region: ${{ env.REGION }}
+          metadata: dev.yaml
+
+      - name: Set no-auth policy
+        run: |-
+          cat <<EOF > policy.yaml
+          bindings:
+            - members:
+              - allUsers
+              role: roles/run.invoker
+          EOF
+          gcloud run services set-iam-policy "${{ env.DEV_SERVICE_NAME }}" policy.yaml --region ${{ env.REGION }} --quiet
+
+      - name: 'Comment URL'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '🚀 Dev deploy complete: ${{ steps.deploy.outputs.url }}\n📦 Image: `${{ env.IMAGE }}`\n📝 Branch: `${{ steps.pr.outputs.ref }}`\n💾 Commit: ${{ steps.pr.outputs.sha }}'
+            })
+
+      - name: 'Create slack payload'
+        run: |-
+          export PR_NAME="${{ steps.pr.outputs.title }}"
+          export PR_LINK="${{ steps.pr.outputs.html_url }}"
+          export SERVICE_URL="${{ steps.deploy.outputs.url }}"
+          export REPO_NAME="${{ github.event.repository.name }}"
+          export REPO_LINK="${{ github.event.repository.html_url }}"
+          export BRANCH_NAME="${{ steps.pr.outputs.ref }}"
+
+          COMMIT=${{ steps.pr.outputs.sha }}
+          SHORT_SHA=${COMMIT::7}
+          export COMMIT_SHA="${SHORT_SHA}"
+
+          cat <<EOF > dev-deploy-payload.json
+          {
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "🚀 *Dev Environment Deployed*"
+                }
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Repository:*\n<${REPO_LINK}|${REPO_NAME}>"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Branch:*\n${BRANCH_NAME}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*PR:*\n<${PR_LINK}|${PR_NAME}>"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Commit:*\n${COMMIT_SHA}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Service URL:*\n<${SERVICE_URL}|Open Dev Service>"
+                  }
+                ]
+              }
+            ]
+          }
+          EOF
+
+      - uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: ${{ vars.SLACK_CHANNEL_ID }}
+          payload-file-path: ./dev-deploy-payload.json
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
