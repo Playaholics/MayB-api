@@ -15,10 +15,7 @@ env:
 jobs:
   deploy-dev:
     runs-on: ubuntu-latest
-    # Only run on PR comments that contain /dev-release
-    if: |
-      github.event.issue.pull_request &&
-      contains(github.event.comment.body, '/dev-release')
+    if: contains(github.event.comment.body, '/dev-release')
 
     permissions:
       contents: 'read'
@@ -133,6 +130,7 @@ jobs:
 
           cat <<EOF > dev-deploy-payload.json
           {
+            "text": "🚀 Dev Environment Deployed - ${REPO_NAME} (${BRANCH_NAME})",
             "blocks": [
               {
                 "type": "section",
