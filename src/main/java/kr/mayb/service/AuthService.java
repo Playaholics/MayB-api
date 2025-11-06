@@ -1,7 +1,6 @@
 package kr.mayb.service;
 
 import io.jsonwebtoken.Claims;
-import jakarta.transaction.Transactional;
 import kr.mayb.data.model.Member;
 import kr.mayb.dto.AuthDto;
 import kr.mayb.dto.MemberDto;
@@ -18,6 +17,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor

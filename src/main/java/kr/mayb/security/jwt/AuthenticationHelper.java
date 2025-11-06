@@ -1,6 +1,5 @@
 package kr.mayb.security.jwt;
 
-import jakarta.transaction.Transactional;
 import kr.mayb.data.model.Authority;
 import kr.mayb.data.model.Member;
 import kr.mayb.data.repository.MemberRepository;
@@ -10,6 +9,7 @@ import kr.mayb.security.AESGCMEncoder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;

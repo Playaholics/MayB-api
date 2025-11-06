@@ -1,4 +1,5 @@
 {
+  "text": "${PR_NAME} deployed successfully - ${BRANCH_NAME}",
   "username": "API Feature Deploy",
   "icon_emoji": ":lightning_cloud:",
   "blocks": [

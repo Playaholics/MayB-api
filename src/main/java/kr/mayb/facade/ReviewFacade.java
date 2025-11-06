@@ -1,6 +1,5 @@
 package kr.mayb.facade;
 
-import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotBlank;
 import kr.mayb.data.model.Member;
 import kr.mayb.data.model.Review;
@@ -22,6 +21,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
