@@ -9,7 +9,6 @@ logging.level:
 server.compression.enabled: true
 
 spring.mvc.pathmatch.matching-strategy: ant-path-matcher
-spring.sleuth.sampler.probability: 0.1
 
 spring:
   cloud:
